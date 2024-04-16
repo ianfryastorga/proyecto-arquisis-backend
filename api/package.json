@@ -1,0 +1,25 @@
+{
+  "name": "e0-iic2173-2024-1-renatasantander",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "commonjs",
+  "repository": "https://github.com/iic2173/e0-iic2173-2024-1-renatasantander.git",
+  "author": "renatasantander <renata.santander@uc.cl>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "koa": "^2.15.2",
+    "koa-body": "^6.0.1",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^12.0.1",
+    "mqtt": "^5.5.0",
+    "nodemon": "^3.1.0",
+    "pg": "^8.11.3",
+    "sequelize": "^6.37.1",
+    "sequelize-cli": "^6.6.2"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  }
+}
