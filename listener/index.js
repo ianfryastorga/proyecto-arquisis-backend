@@ -1,45 +1,30 @@
-const mqtt = require("mqtt");
-const dotenv = require("dotenv");
-const axios = require("axios");
+const mqtt = require('mqtt');
+const dotenv = require('dotenv');
+const axios = require('axios');
 
 dotenv.config();
 
-const HOST = "broker.iic2173.org";
+const HOST = 'broker.iic2173.org';
 const PORT = 9000;
-const USER = "students";
-const PASSWORD = "iic2173-2024-1-students";
-const TOPIC = "flights/info";
+const USER = 'students';
+const PASSWORD = 'iic2173-2024-1-students';
+const TOPIC = 'flights/info';
 
 const client = mqtt.connect(`mqtt://${HOST}:${PORT}`, {
   username: USER,
   password: PASSWORD,
 });
 
-client.on("connect", () => {
-  console.log("Connected to MQTT broker");
+client.on('connect', () => {
+  console.log('Connected to MQTT broker');
 
   client.subscribe(TOPIC, (err) => {
     if (err) {
-      console.error("Error subscribing to topic", err);
+      console.error('Error subscribing to topic', err);
     } else {
       console.log(`Subscribed to topic ${TOPIC}`);
     }
   });
-});
-
-client.on("message", (topic, message) => {
-  console.log(`Received message on ${topic}: ${message.toString()}`);
-  try {
-    const flightData = JSON.parse(message.toString());
-    const flight = parseFlightData(flightData);
-    sendFlightToAPI(flight);
-  } catch (error) {
-    console.error("Error parsing message or sending flight to API: ", error);
-  }
-});
-
-client.on("error", (error) => {
-  console.error("Error connecting to MQTT broker: ", error);
 });
 
 function parseFlightData(flightData) {
@@ -55,7 +40,7 @@ function parseFlightData(flightData) {
         const parsedCarbonEmission = JSON.parse(flightData[0].carbonEmission);
         carbonEmission = parsedCarbonEmission.this_flight;
       } catch (error) {
-        console.error("Error parsing carbon emission data: ", error);
+        console.error('Error parsing carbon emission data: ', error);
       }
     }
 
@@ -71,24 +56,39 @@ function parseFlightData(flightData) {
       airline: flightInfo.airline,
       airlineLogo: flightInfo.airline_logo,
       price: flightData[0].price,
-      carbonEmission: carbonEmission,
+      carbonEmission,
       airlineLogoUrl: flightData[0].airlineLogo,
       currency: flightData[0].currency,
     };
 
     return flight;
   } catch (error) {
-    throw new Error("Error parsing flight data: " + error.message);
+    throw new Error(`Error parsing flight data: ${error.message}`);
   }
 }
 
 async function sendFlightToAPI(flight) {
   try {
     const response = await axios.post(process.env.API_URL, flight);
-    console.log("Flight send to API: ", response.data);
+    console.log('Flight send to API: ', response.data);
   } catch (error) {
-    console.error("Error sending flight to API: ", error);
+    console.error('Error sending flight to API: ', error);
   }
 }
+
+client.on('message', (topic, message) => {
+  console.log(`Received message on ${topic}: ${message.toString()}`);
+  try {
+    const flightData = JSON.parse(message.toString());
+    const flight = parseFlightData(flightData);
+    sendFlightToAPI(flight);
+  } catch (error) {
+    console.error('Error parsing message or sending flight to API: ', error);
+  }
+});
+
+client.on('error', (error) => {
+  console.error('Error connecting to MQTT broker: ', error);
+});
 
 module.exports = client;

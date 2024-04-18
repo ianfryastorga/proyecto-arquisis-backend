@@ -1,4 +1,3 @@
-'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -7,61 +6,61 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       departureAirportName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       departureAirportId: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       departureTime: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       arrivalAirportName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       arrivalAirportId: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       arrivalTime: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       duration: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       airplane: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       airline: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       airlineLogo: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       price: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       carbonEmission: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       airlineLogoUrl: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       currency: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Flights');
-  }
+  },
 };

@@ -1,7 +1,7 @@
-'use strict';
 const {
-  Model
+  Model,
 } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Flight extends Model {
     /**
@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     price: DataTypes.INTEGER,
     carbonEmission: DataTypes.INTEGER,
     airlineLogoUrl: DataTypes.STRING,
-    currency: DataTypes.STRING
+    currency: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'Flight',
