@@ -15,7 +15,7 @@ app.use(koaBody());
 app.use(router.routes());
 
 app.use((ctx) => {
-    ctx.body = 'Hello Koa';
-  });
+  ctx.body = 'Hello Koa';
+});
 
 module.exports = app;
