@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
     carbonEmission: DataTypes.INTEGER,
     airlineLogoUrl: DataTypes.STRING,
     currency: DataTypes.STRING,
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 90,
+    },
   }, {
     sequelize,
     modelName: 'Flight',
