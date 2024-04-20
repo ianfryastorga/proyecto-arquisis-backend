@@ -69,7 +69,7 @@ function parseFlightData(flightData) {
 
 async function sendFlightToAPI(flight) {
   try {
-    const response = await axios.post(process.env.API_URL, flight);
+    const response = await axios.post(`${process.env.API_URL}/flights`, flight);
     console.log('Flight send to API: ', response.data);
   } catch (error) {
     console.error('Error sending flight to API: ', error);
