@@ -66,7 +66,8 @@ client.on('message', (topic, message) => {
     console.log(`Received message on ${topic}:`, message.toString());
     try {
         const request = parseRequestData(message.toString());
-        if (request.groupId !== '11') {
+        console.log('Request:', request);
+        if (request.groupId !== "11") {
             console.log('Request does not belong to group 11');
             sendRequestToApi(request);
             return;
@@ -81,7 +82,18 @@ client.on('message', (topic, message) => {
 // Publicar nuestras requests
 async function sendRequestToBroker(request) {
     try {
-        const requestData = JSON.stringify(request); // Date Handle
+        const parsedRequest = {
+            request_id: request.requestId,
+            group_id: request.groupId,
+            departure_airport: request.departureAirport,
+            arrival_airport: request.arrivalAirport,
+            departure_time: request.departureTime,
+            datetime: request.datetime,
+            deposit_token: request.depositToken,
+            quantity: request.quantity,
+            seller: request.seller,
+        } 
+        const requestData = JSON.stringify(parsedRequest); // Date Handle
         client.publish(TOPIC, requestData);
         console.log('Request published to broker:', requestData);
     } catch (error) {
