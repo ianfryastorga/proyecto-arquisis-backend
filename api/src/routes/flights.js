@@ -52,7 +52,7 @@ router.get('flights.list', '/', async (ctx) => {
       where: filterOptions,
       limit: count,
       offset,
-      order: [['departuraTime', 'ASC']],
+      order: [['departureTime', 'ASC']],
     });
 
     const totalCount = await ctx.orm.Flight.count({

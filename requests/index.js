@@ -6,6 +6,7 @@ const { koaBody } = require('koa-body');
 const koaLogger = require('koa-logger');
 const Router = require('koa-router');
 const boddyParser = require('koa-bodyparser');
+const moment = require('moment');
 
 const app = new Koa();
 const router = new Router();
@@ -75,7 +76,6 @@ client.on('message', (topic, message) => {
   console.log(`Received message on ${topic}:`, message.toString());
   try {
     const request = parseRequestData(message.toString());
-    console.log('Request:', request);
     if (request.groupId !== '11') {
       console.log('Request does not belong to group 11');
       sendRequestToApi(request);
@@ -85,7 +85,7 @@ client.on('message', (topic, message) => {
   } catch (error) {
     console.error('Error sending request to broker:', error);
   }
-});
+});  
 
 // Publicar nuestras requests
 async function sendRequestToBroker(request) {
@@ -95,12 +95,13 @@ async function sendRequestToBroker(request) {
       group_id: request.groupId,
       departure_airport: request.departureAirport,
       arrival_airport: request.arrivalAirport,
-      departure_time: request.departureTime,
+      departure_time: moment(request.departureTime, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD HH:mm"),
       datetime: request.datetime,
       deposit_token: request.depositToken,
       quantity: request.quantity,
       seller: request.seller,
     };
+    // Cambiar formato de fecha
     const requestData = JSON.stringify(parsedRequest); // Date Handle
     client.publish(TOPIC, requestData);
     console.log('Request published to broker:', requestData);

@@ -12,10 +12,8 @@ router.post('requests.create', '/', async (ctx) => {
     } 
     const request = await ctx.orm.Request.create(ctx.request.body);
     const { groupId } = request;
-    console.log(groupId)
 
     if (groupId === '11') {
-      console.log('HOLA')
       await axios.post(process.env.REQUEST_URL, request);
     }
     ctx.body = request;
