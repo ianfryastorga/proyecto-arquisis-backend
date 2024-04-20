@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
     depositToken: DataTypes.STRING,
     quantity: DataTypes.INTEGER,
     seller: DataTypes.INTEGER,
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'pending',
+    },
   }, {
     sequelize,
     modelName: 'Request',
