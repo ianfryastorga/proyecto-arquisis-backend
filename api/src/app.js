@@ -3,6 +3,7 @@ const { koaBody } = require('koa-body');
 const koaLogger = require('koa-logger');
 const router = require('./routes.js');
 const orm = require('./models');
+const cors = require('@koa/cors');
 // const mqtt = require('mqtt');
 
 const app = new Koa();
@@ -11,6 +12,7 @@ app.context.orm = orm;
 
 app.use(koaLogger());
 app.use(koaBody());
+app.use(cors());
 
 app.use(router.routes());
 

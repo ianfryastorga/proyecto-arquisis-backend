@@ -52,8 +52,11 @@ router.get('flights.list', '/', async (ctx) => {
       where: filterOptions,
       limit: count,
       offset,
-      order: [['createdAt', 'DESC']],
+      order: [['departuraTime', 'ASC']],
     });
+
+    const totalCount = await ctx.orm.Flight.count({
+      where: filterOptions});
 
     let lastUpdate;
     if (flights.count > 0) {
@@ -63,7 +66,10 @@ router.get('flights.list', '/', async (ctx) => {
     }
 
     ctx.body = {
-      lastUpdate,
+      lastUpdate: lastUpdate,
+      page: page,
+      count: count,
+      totalCount: totalCount,
       flights: flights.rows,
     };
     ctx.status = 200;
