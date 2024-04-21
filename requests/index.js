@@ -6,6 +6,7 @@ const { koaBody } = require('koa-body');
 const koaLogger = require('koa-logger');
 const Router = require('koa-router');
 const boddyParser = require('koa-bodyparser');
+const moment = require('moment');
 
 const app = new Koa();
 const router = new Router();
@@ -71,21 +72,53 @@ async function sendRequestToApi(request) {
   }
 }
 
+async function findFlightAndUpdateQuantity(request) {
+    try {
+        console.log('Finding flight...');
+        console.log('Request:', request);
+        const response = await axios.get(`${process.env.API_URL}/flights/find`, {
+            params: {
+            departureAirportId: request.departureAirport,
+            arrivalAirportId: request.arrivalAirport,
+            departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+            createdAt: request.datetime,
+        },
+        });
+
+        console.log('Flight found:', response.data);
+
+        const flight = response.data;
+
+        if (!flight) {
+            console.log('Flight not found');
+            return;
+        }
+
+        console.log('Flight found:');
+
+        const updatedQuantity = flight.quantity - request.quantity;
+        await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity });
+        console.log('Flight updated:', flight.id);
+    } catch (error) {
+        console.error('Error updating flight:', error);
+    }
+}
+
 client.on('message', (topic, message) => {
   console.log(`Received message on ${topic}:`, message.toString());
   try {
     const request = parseRequestData(message.toString());
-    console.log('Request:', request);
     if (request.groupId !== '11') {
       console.log('Request does not belong to group 11');
       sendRequestToApi(request);
     }
+    findFlightAndUpdateQuantity(request);
     // Send request to API
     // Guardar en una base de datos, ver validacion y manejar
   } catch (error) {
     console.error('Error sending request to broker:', error);
   }
-});
+});  
 
 // Publicar nuestras requests
 async function sendRequestToBroker(request) {
@@ -95,12 +128,13 @@ async function sendRequestToBroker(request) {
       group_id: request.groupId,
       departure_airport: request.departureAirport,
       arrival_airport: request.arrivalAirport,
-      departure_time: request.departureTime,
+      departure_time: moment(request.departureTime, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD HH:mm"),
       datetime: request.datetime,
       deposit_token: request.depositToken,
       quantity: request.quantity,
       seller: request.seller,
     };
+    // Cambiar formato de fecha
     const requestData = JSON.stringify(parsedRequest); // Date Handle
     client.publish(TOPIC, requestData);
     console.log('Request published to broker:', requestData);
