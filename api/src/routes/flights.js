@@ -97,4 +97,67 @@ router.get('flight.show', '/:id', async (ctx) => {
   }
 });
 
+// Endpoint para obtener vuelo segun departureAirportId, arrivalAirportId, departureTime y datetime
+router.get('flights.find', '/find', async (ctx) => {
+  console.log("hola0")
+  try {
+    console.log("hola")
+    const { departureAirportId } = ctx.request.params;
+    const { arrivalAirportId } = ctx.request.params;
+    const { departureTime } = ctx.request.params;
+    const { createdAt } = ctx.request.params;
+
+    console.log("hola2")
+    if (!departureAirportId || !arrivalAirportId || !departureTime || !createdAt) {
+      ctx.body = { error: 'Missing parameters' };
+      ctx.status = 400;
+      return;
+    }
+
+    console.log("hola3")
+
+    const flight = await ctx.orm.Flight.findOne({
+      where: {
+        departureAirportId: departureAirportId,
+        arrivalAirportId: arrivalAirportId,
+        departureTime: departureTime,
+        createdAt: createdAt,
+      },
+    });
+
+    console.log("hol4")
+
+    if (!flight) {
+      ctx.body = { error: 'Flight not found' };
+      ctx.status = 404;
+      return;
+    }
+
+    ctx.body = flight;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+});
+
+router.patch('flight.update', '/:id', async (ctx) => {
+  try {
+    const flight = await ctx.orm.Flight.findOne({
+      where: { id: ctx.params.id },
+    });
+    if (!flight) {
+      ctx.body = { error: 'Flight not found' };
+      ctx.status = 404;
+      return;
+    }
+    await flight.update(ctx.request.body);
+    ctx.body = flight;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+});
+
 module.exports = router;
