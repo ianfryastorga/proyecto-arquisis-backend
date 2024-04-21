@@ -40,14 +40,14 @@ services:
     env_file:
       - ./listener/.env
 
-  request:
+  requests:
     build:
-      context: ./request
+      context: ./requests
       dockerfile: Dockerfile
     container_name: requests
     restart: unless-stopped
     volumes:
-      - ./request:/app
+      - ./requests:/app
     ports:
       - "8000:8000"
     networks:
@@ -55,7 +55,7 @@ services:
     depends_on:
       - api
     env_file:
-      - ./request/.env
+      - ./requests/.env
   
   validations:
     build:
