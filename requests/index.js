@@ -74,28 +74,19 @@ async function sendRequestToApi(request) {
 
 async function findFlightAndUpdateQuantity(request) {
     try {
-        console.log('Finding flight...');
-        console.log('Request:', request);
         const response = await axios.get(`${process.env.API_URL}/flights/find`, {
             params: {
             departureAirportId: request.departureAirport,
             arrivalAirportId: request.arrivalAirport,
             departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
-            createdAt: request.datetime,
         },
         });
-
-        console.log('Flight found:', response.data);
-
         const flight = response.data;
 
         if (!flight) {
             console.log('Flight not found');
             return;
         }
-
-        console.log('Flight found:');
-
         const updatedQuantity = flight.quantity - request.quantity;
         await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity });
         console.log('Flight updated:', flight.id);

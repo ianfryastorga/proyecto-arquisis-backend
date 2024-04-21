@@ -33,7 +33,7 @@ function parseValidationData(validationData) {
     const validation = {
       requestId: validationString.request_id,
       groupId: validationString.group_id,
-      seller: validationString.status,
+      seller: validationString.seller,
       valid: validationString.valid,
     };
     return validation;
@@ -46,7 +46,7 @@ client.on('message', (topic, message) => {
   console.log(`Received message from topic ${topic}: ${message.toString()}`);
   try {
     const validation = parseValidationData(message.toString());
-    // sendValidationToApi(validation);
+    sendValidationToApi(validation);
     // Logica para confirmar compra o rechazar (atributo estado en front)
   } catch (error) {
     console.error(error.message);
