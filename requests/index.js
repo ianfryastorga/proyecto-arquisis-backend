@@ -73,26 +73,26 @@ async function sendRequestToApi(request) {
 }
 
 async function findFlightAndUpdateQuantity(request) {
-    try {
-        const response = await axios.get(`${process.env.API_URL}/flights/find`, {
-            params: {
-            departureAirportId: request.departureAirport,
-            arrivalAirportId: request.arrivalAirport,
-            departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
-        },
-        });
-        const flight = response.data;
+  try {
+    const response = await axios.get(`${process.env.API_URL}/flights/find`, {
+      params: {
+        departureAirportId: request.departureAirport,
+        arrivalAirportId: request.arrivalAirport,
+        departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+      },
+    });
+    const flight = response.data;
 
-        if (!flight) {
-            console.log('Flight not found');
-            return;
-        }
-        const updatedQuantity = flight.quantity - request.quantity;
-        await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity });
-        console.log('Flight updated:', flight.id);
-    } catch (error) {
-        console.error('Error updating flight:', error);
+    if (!flight) {
+      console.log('Flight not found');
+      return;
     }
+    const updatedQuantity = flight.quantity - request.quantity;
+    await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity });
+    console.log('Flight updated:', flight.id);
+  } catch (error) {
+    console.error('Error updating flight:', error);
+  }
 }
 
 client.on('message', (topic, message) => {
@@ -109,7 +109,7 @@ client.on('message', (topic, message) => {
   } catch (error) {
     console.error('Error sending request to broker:', error);
   }
-});  
+});
 
 // Publicar nuestras requests
 async function sendRequestToBroker(request) {
@@ -119,7 +119,7 @@ async function sendRequestToBroker(request) {
       group_id: request.groupId,
       departure_airport: request.departureAirport,
       arrival_airport: request.arrivalAirport,
-      departure_time: moment(request.departureTime, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD HH:mm"),
+      departure_time: moment(request.departureTime, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD HH:mm'),
       datetime: request.datetime,
       deposit_token: request.depositToken,
       quantity: request.quantity,
