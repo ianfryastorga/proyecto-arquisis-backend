@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
+const moment = require('moment');
 
 const router = new Router();
 
@@ -9,11 +10,13 @@ router.post('requests.create', '/', async (ctx) => {
     // console.log(ctx.request.body)
     if (ctx.request.body.groupId === '11') {
       ctx.request.body.requestId = uuidv4();
+      ctx.request.body.datetime = moment().tz('America/Santiago').format();
     } 
     const request = await ctx.orm.Request.create(ctx.request.body);
     const { groupId } = request;
+    const { quantity } = request;
 
-    if (groupId === '11') {
+    if (groupId === '11' && quantity > 0 && quantity <= 4) {
       await axios.post(process.env.REQUEST_URL, request);
     }
     ctx.body = request;

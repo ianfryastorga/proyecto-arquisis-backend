@@ -79,6 +79,44 @@ router.get('flights.list', '/', async (ctx) => {
   }
 });
 
+
+// Endpoint para obtener vuelo segun departureAirportId, arrivalAirportId, departureTime y datetime
+router.get('flights.find', '/find', async (ctx) => {
+  try {
+    const { departureAirportId } = ctx.query;
+    const { arrivalAirportId } = ctx.query;
+    const { departureTime } = ctx.query;
+    
+    if (!departureAirportId || !arrivalAirportId || !departureTime) {
+      ctx.body = { error: 'Missing parameters' };
+      ctx.status = 400;
+      return;
+    }
+    
+    
+    const flight = await ctx.orm.Flight.findOne({
+      where: {
+        departureAirportId: departureAirportId,
+        arrivalAirportId: arrivalAirportId,
+        departureTime: departureTime,
+      },
+    });
+    
+    
+    if (!flight) {
+      ctx.body = { error: 'Flight not found' };
+      ctx.status = 404;
+      return;
+    }
+    
+    ctx.body = flight;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+});
+
 router.get('flight.show', '/:id', async (ctx) => {
   try {
     const flight = await ctx.orm.Flight.findOne({
@@ -91,50 +129,6 @@ router.get('flight.show', '/:id', async (ctx) => {
       ctx.body = { error: 'Flight not found' };
       ctx.status = 404;
     }
-  } catch (error) {
-    ctx.body = { error: error.message };
-    ctx.status = 500;
-  }
-});
-
-// Endpoint para obtener vuelo segun departureAirportId, arrivalAirportId, departureTime y datetime
-router.get('flights.find', '/find', async (ctx) => {
-  console.log("hola0")
-  try {
-    console.log("hola")
-    const { departureAirportId } = ctx.request.params;
-    const { arrivalAirportId } = ctx.request.params;
-    const { departureTime } = ctx.request.params;
-    const { createdAt } = ctx.request.params;
-
-    console.log("hola2")
-    if (!departureAirportId || !arrivalAirportId || !departureTime || !createdAt) {
-      ctx.body = { error: 'Missing parameters' };
-      ctx.status = 400;
-      return;
-    }
-
-    console.log("hola3")
-
-    const flight = await ctx.orm.Flight.findOne({
-      where: {
-        departureAirportId: departureAirportId,
-        arrivalAirportId: arrivalAirportId,
-        departureTime: departureTime,
-        createdAt: createdAt,
-      },
-    });
-
-    console.log("hol4")
-
-    if (!flight) {
-      ctx.body = { error: 'Flight not found' };
-      ctx.status = 404;
-      return;
-    }
-
-    ctx.body = flight;
-    ctx.status = 200;
   } catch (error) {
     ctx.body = { error: error.message };
     ctx.status = 500;
