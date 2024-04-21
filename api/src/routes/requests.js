@@ -65,4 +65,23 @@ router.get('requests.show', '/:requestId', async (ctx) => {
   }
 });
 
+router.get('requests.list', '/', async (ctx) => {
+  try {
+    const { username }= ctx.query;
+    if (username) {
+      const requests = await ctx.orm.Request.findAll({
+        where: { username },
+      });
+      ctx.body = requests;
+      ctx.status = 200;
+    } else {
+      ctx.status = 400;
+      ctx.body = { error: 'Invalid username' };
+    }
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+});
+
 module.exports = router;
