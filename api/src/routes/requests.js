@@ -67,7 +67,7 @@ router.get('requests.show', '/:requestId', async (ctx) => {
 
 router.get('requests.list', '/', async (ctx) => {
   try {
-    const { username }= ctx.query;
+    const { username } = ctx.query;
     if (username) {
       const requests = await ctx.orm.Request.findAll({
         where: { username },
