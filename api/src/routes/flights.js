@@ -55,8 +55,7 @@ router.get('flights.list', '/', async (ctx) => {
       order: [['departureTime', 'ASC']],
     });
 
-    const totalCount = await ctx.orm.Flight.count({
-      where: filterOptions});
+    const totalCount = await ctx.orm.Flight.count({ where: filterOptions });
 
     let lastUpdate;
     if (flights.count > 0) {
@@ -66,10 +65,10 @@ router.get('flights.list', '/', async (ctx) => {
     }
 
     ctx.body = {
-      lastUpdate: lastUpdate,
-      page: page,
-      count: count,
-      totalCount: totalCount,
+      lastUpdate,
+      page,
+      count,
+      totalCount,
       flights: flights.rows,
     };
     ctx.status = 200;
@@ -79,36 +78,33 @@ router.get('flights.list', '/', async (ctx) => {
   }
 });
 
-
 // Endpoint para obtener vuelo segun departureAirportId, arrivalAirportId, departureTime y datetime
 router.get('flights.find', '/find', async (ctx) => {
   try {
     const { departureAirportId } = ctx.query;
     const { arrivalAirportId } = ctx.query;
     const { departureTime } = ctx.query;
-    
+
     if (!departureAirportId || !arrivalAirportId || !departureTime) {
       ctx.body = { error: 'Missing parameters' };
       ctx.status = 400;
       return;
     }
-    
-    
+
     const flight = await ctx.orm.Flight.findOne({
       where: {
-        departureAirportId: departureAirportId,
-        arrivalAirportId: arrivalAirportId,
-        departureTime: departureTime,
+        departureAirportId,
+        arrivalAirportId,
+        departureTime,
       },
     });
-    
-    
+
     if (!flight) {
       ctx.body = { error: 'Flight not found' };
       ctx.status = 404;
       return;
     }
-    
+
     ctx.body = flight;
     ctx.status = 200;
   } catch (error) {

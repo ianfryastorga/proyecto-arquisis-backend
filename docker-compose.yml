@@ -39,6 +39,38 @@ services:
       - api
     env_file:
       - ./listener/.env
+
+  request:
+    build:
+      context: ./request
+      dockerfile: Dockerfile
+    container_name: requests
+    restart: unless-stopped
+    volumes:
+      - ./request:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    depends_on:
+      - api
+    env_file:
+      - ./request/.env
+  
+  validations:
+    build:
+      context: ./validations
+      dockerfile: Dockerfile
+    container_name: validations
+    restart: unless-stopped
+    volumes:
+      - ./validations:/app
+    networks:
+      - app-network
+    depends_on:
+      - api
+    env_file:
+      - ./validations/.env
   
 networks:
   app-network:

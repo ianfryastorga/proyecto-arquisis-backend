@@ -42,6 +42,15 @@ function parseValidationData(validationData) {
   }
 }
 
+async function sendValidationToApi(validation) {
+  try {
+    const response = await axios.post(`${process.env.API_URL}/validations`, validation);
+    console.log('Validation sent to API:', response.data);
+  } catch (error) {
+    console.error('Error sending validation to API:', error.message);
+  }
+}
+
 client.on('message', (topic, message) => {
   console.log(`Received message from topic ${topic}: ${message.toString()}`);
   try {
@@ -52,14 +61,5 @@ client.on('message', (topic, message) => {
     console.error(error.message);
   }
 });
-
-async function sendValidationToApi(validation) {
-  try {
-    const response = await axios.post(`${process.env.API_URL}/validations`, validation);
-    console.log('Validation sent to API:', response.data);
-  } catch (error) {
-    console.error('Error sending validation to API:', error.message);
-  }
-}
 
 module.exports = client;

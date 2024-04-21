@@ -12,7 +12,7 @@ router.post('requests.create', '/', async (ctx) => {
     if (ctx.request.body.groupId === '11') {
       ctx.request.body.requestId = uuidv4();
       ctx.request.body.datetime = moment().tz('America/Santiago').format();
-    } 
+    }
     const request = await ctx.orm.Request.create(ctx.request.body);
     const { groupId } = request;
     const { quantity } = request;
