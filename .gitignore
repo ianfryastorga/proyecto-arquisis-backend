@@ -1,0 +1,7 @@
+listener/node_modules
+api/node_modules
+.env
+e0-arqui.pem
+.DS_Store
+requests/node_modules
+validations/node_modules
