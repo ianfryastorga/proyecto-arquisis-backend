@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const { where } = require('sequelize');
 
 const router = new Router();
