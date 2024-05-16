@@ -4,9 +4,9 @@
 
 - Se utilizó Node.js con Koa para el desarrollo de la API.
 - Se utilizó Sequelize como ORM para la conexión con la base de datos.
-- Nombre del dominio: [grupo11arquisis.live](grupo11arquisis.live)
-- URL del frontend (dominio): [https://web.grupo11arquisis.live/](https://web.grupo11arquisis.live/)
-- URL de la API (subdominio): [https://api.grupo11arquisis.live](https://api.grupo11arquisis.live)
+- URL del frontend: [https://web.grupo11arquisis.live](https://web.grupo11arquisis.live)
+- URL de API Gateway: [https://api.grupo11arquisis.live](https://api.grupo11arquisis.live)
+- URL de Instancia EC2: [grupo11arquisis.live](grupo11arquisis.live)
 
 ## Documentación API
 
@@ -128,7 +128,7 @@ BACKEND_URL = <backend_url>
 
 * Se creó un pipeline de CI en Github Actions que se encarga de ejecutar un linter en cada uno de los proyectos del repositorio cuando se hace pull request en las ramas `main` y `develop`.
 
-#### Pasos para replicar Pipeline CI
+#### Pasos para replicar Pipeline CI (Backend)
 
 1. Crear un archivo `.yml` dentro de la carpeta `.github/workflows` en el repositorio con el siguiente contenido:
 ```yml
@@ -145,6 +145,10 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        project: [api, listener, requests, validations]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -152,13 +156,21 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
+      # - name: Install dependencies
+      #   run: yarn install
       - name: Install dependencies
-        run: yarn install
+        run: |
+          cd ${{ matrix.project }}
+          yarn install
 
+      # - name: Lint with yarn
+      #   run: yarn lint
       - name: Lint with yarn
-        run: yarn lint
+        run: |
+          cd ${{ matrix.project }}
+          yarn lint
 
       - name: echo
         run: echo "Linting complete!"
@@ -186,3 +198,11 @@ jobs:
 }
 ```
 5. Crear un pull request a las ramas `main` o `develop` y verificar que el pipeline de CI se ejecute correctamente.
+
+#### Pasos para replicar Pipeline CI (Backend)
+
+* Para replicar el pipeline de CI en el frontend, se debe seguir los mismos pasos anteriores, pero con las siguientes modificaciones:
+  1. En el archivo `.yml` de Github Actions, se debe omitir el paso de la matriz, ya que es un solo proyecto.
+  2. Instalar ESLint en el repositorio con los comandos anteriores.
+  3. Se debe agregar el archivo `.eslintrc.js` en la raíz del repositorio.
+  4. Se debe agregar los scripts de linter en el `package.json` del repositorio.
