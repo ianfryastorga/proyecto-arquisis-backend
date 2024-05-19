@@ -65,6 +65,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./validations:/app
+    ports:
+      - "5000:5000"
     networks:
       - app-network
     depends_on:

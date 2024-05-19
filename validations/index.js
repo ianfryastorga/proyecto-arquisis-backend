@@ -1,6 +1,20 @@
 const mqtt = require('mqtt');
 const dotenv = require('dotenv');
 const axios = require('axios');
+const Koa = require('koa');
+const { koaBody } = require('koa-body');
+const koaLogger = require('koa-logger');
+const Router = require('koa-router');
+const boddyParser = require('koa-bodyparser');
+const moment = require('moment');
+
+const app = new Koa();
+const router = new Router();
+
+app.use(koaLogger());
+app.use(koaBody());
+app.use(boddyParser());
+app.use(router.routes());
 
 dotenv.config();
 
@@ -60,6 +74,33 @@ client.on('message', (topic, message) => {
   } catch (error) {
     console.error(error.message);
   }
+});
+
+async function sendValidationToBroker(request) {
+  try {
+    const requestData = JSON.stringify(request); // Date Handle
+    client.publish(TOPIC, requestData);
+    console.log('Request published to broker:', requestData);
+  } catch (error) {
+    throw new Error(`Error publishing request to broker: ${error.message}`);
+  }
+}
+
+router.post('/', async (ctx) => {
+  try {
+    const request = ctx.request.body;
+    const validation = parseValidationData(request);
+    await sendValidationToBroker(validation);
+    ctx.body = validation;
+    ctx.status = 201;
+  } catch (error) {
+    ctx.body = { error };
+    ctx.status = 400;
+  }
+});
+
+app.listen(process.env.VALIDATION_PORT, (err) => {
+  console.log('Listening on port', process.env.VALIDATION_PORT);
 });
 
 module.exports = client;
