@@ -65,15 +65,45 @@ services:
     restart: unless-stopped
     volumes:
       - ./validations:/app
+    ports:
+      - "5000:5000"
     networks:
       - app-network
     depends_on:
       - api
     env_file:
       - ./validations/.env
+
+  recommendation-service:
+    build:
+      context: ./recommendation-service
+      dockerfile: Dockerfile
+    container_name: recommendation-service
+    restart: unless-stopped
+    volumes:
+      - ./recommendation-service:/app
+    ports:
+      - "4000:4000"
+    networks:
+      - worker
+    depends_on:
+      - redis
+    env_file:
+      - ./recommendation-service/.env
+    
+  redis:
+    image: redis
+    container_name: redis
+    # command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    networks:
+      - worker
   
 networks:
   app-network:
+    driver: bridge
+  worker:
     driver: bridge
 
 volumes:
