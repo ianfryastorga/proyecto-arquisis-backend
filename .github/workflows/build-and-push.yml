@@ -7,15 +7,16 @@ on:
       - master
       - devops
 
-
 permissions:
-  id-token: write # This is required for requesting the JWT
+  id-token: write  # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
-  
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_DEFAULT_REGION: us-east-1  # Default region for ECR
 
     steps:
       - name: Checkout code
@@ -24,10 +25,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID0}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY0}}
-          aws-region: us-east-1
-          #role-to-assume: arn:aws:iam::767398137403:role/backend-cd
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID0 }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY0 }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr-public
@@ -36,9 +36,9 @@ jobs:
           registry-type: public
           mask-password: "true"
 
-      - name: Build, tag, and push docker image to Amazon ECR Public
+      - name: Build, tag, and push docker image to Amazon ECR Public (API)
         env:
-          REGISTRY: ${{steps.login-ecr-public.outputs.registry}}
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
           IMAGE_TAG: api
@@ -47,9 +47,9 @@ jobs:
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 
-      - name: Build, tag, and push docker image to Amazon ECR Public
+      - name: Build, tag, and push docker image to Amazon ECR Public (Listener)
         env:
-          REGISTRY: ${{steps.login-ecr-public.outputs.registry}}
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
           IMAGE_TAG: listener
@@ -57,10 +57,10 @@ jobs:
           cd listener
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
- 
-      - name: Build, tag, and push docker image to Amazon ECR Public
+
+      - name: Build, tag, and push docker image to Amazon ECR Public (Requests)
         env:
-          REGISTRY: ${{steps.login-ecr-public.outputs.registry}}
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
           IMAGE_TAG: requests
@@ -69,9 +69,9 @@ jobs:
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 
-      - name: Build, tag, and push docker image to Amazon ECR Public
+      - name: Build, tag, and push docker image to Amazon ECR Public (Validations)
         env:
-          REGISTRY: ${{steps.login-ecr-public.outputs.registry}}
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
           IMAGE_TAG: validations
@@ -79,54 +79,43 @@ jobs:
           cd validations
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
-# Deploy a EC2 instance
 
   deploy-to-ec2:
     runs-on: ubuntu-latest
-    if: ${{always()}}
-    # Tiene el requisito de que el job de antes funcione
+    if: ${{ always() }}
     needs: [build-and-push]
+
+    env:
+      AWS_DEFAULT_REGION: us-east-2  # Default region for CodeDeploy
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials for us-east-2
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID0}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY0}}
-          aws-region: us-east-1
-
-      # - name: Configure AWS Credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     role-to-assume: arn:aws:iam::....
-      #     aws-region: us-east-1 holaaa
-
-      - name: Login to Amazon ECR
-        id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registry-type: public
-          mask-password: "true"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID0 }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY0 }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Zip artifact to deploy
         run: |
           zip -r deploy.zip scripts/ appspec.yml docker-compose.production.yml
+
       - name: Copy Zip to S3
         run: |
-          aws s3 cp deploy.zip s3://deploy-backend/deploy.zip
-      
+          aws s3 cp deploy.zip s3://deploy-backend/deploy.zip --region ${{ env.AWS_DEFAULT_REGION }}
+
       - name: Create CodeDeploy Deployment
         id: create-deployment-trigger
         run: |
           deploymentId=$(aws deploy create-deployment --application-name \
-          Backend-proyecto --deployment-group-name deploy-backend --region us-east-2 \
+          Backend-proyecto --deployment-group-name deploy-backend --region ${{ env.AWS_DEFAULT_REGION }} \
           --s3-location bucket=deploy-backend,key=deploy.zip,bundleType=zip \
-          --description "Automatic deployment from githubactions commit ${{github.sha}}" | jq -r '.deploymentId')
+          --description "Automatic deployment from githubactions commit ${{ github.sha }}" | jq -r '.deploymentId')
           echo "DeploymentId=$deploymentId" >> $GITHUB_OUTPUT
     
       - name: Wait for deployment to finish
         run: |
-          aws deploy wait deployment-successful --deployment-id ${{ steps.create-deployment-trigger.outputs.deploymentId }} --region us-east-2
-    
+          aws deploy wait deployment-successful --deployment-id ${{ steps.create-deployment-trigger.outputs.deploymentId }} --region ${{ env.AWS_DEFAULT_REGION }}
