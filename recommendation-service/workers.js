@@ -11,6 +11,8 @@ dotenv.config();
 //     });
 // }
 
+console.log("Starting worker...");
+
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
     host: process.env.DB_HOST,
     // port: process.env.DB_PORT || 5432,
@@ -27,7 +29,7 @@ async function getIpLocation(ipAddress) {
 async function getLastFlightInfo(flight) {
   // Lógica para obtener la información del último vuelo comprado (arrivalAirport, arrivalTime)
   const arrivalAirport = flight.arrivalAirportId;
-  const arrivalTime = flight.arrivalTime;
+  const arrivalTime = new Date(flight.arrivalTime);
   return { arrivalAirport, arrivalTime };
 }
 
@@ -119,7 +121,7 @@ async function processor(job) {
       return recommendations;
       
     } catch (error) {
-      console.error(`Error processing job: ${error.message}`);
+      console.log(`Error processing job: ${error.message}`);
       throw error;
     }
 }
