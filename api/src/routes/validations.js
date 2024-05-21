@@ -47,15 +47,18 @@ async function createFlightRecommendations(request) {
 
 router.post('validations.create', '/', async (ctx) => {
   try {
-
+    console.log(ctx.request.body);
     const validation = await ctx.orm.Validation.create(ctx.request.body);
     const { valid } = validation;
     const { requestId } = validation;
 
-    const request = axios.get(`${process.env.API_URL}/requests/${requestId}`);
+    const response = await axios.get(`${process.env.API_URL}/requests/${requestId}`);
+    const request = response.data;
 
     if (!valid) {
+
         console.log(`Compra rechazada para request ${requestId}`);
+        console.log('Request:', request);
         await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'rejected' });
         findFlightAndUpdateQuantity(request);
         return;
