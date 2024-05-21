@@ -101,7 +101,7 @@ jobs:
       #   uses: aws-actions/configure-aws-credentials@v1
       #   with:
       #     role-to-assume: arn:aws:iam::....
-      #     aws-region: us-east-1 holaa
+      #     aws-region: us-east-1 holaaa
 
       - name: Login to Amazon ECR
         id: login-ecr-public
