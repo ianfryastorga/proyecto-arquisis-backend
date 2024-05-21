@@ -7,3 +7,4 @@ requests/node_modules
 validations/node_modules
 recommendation-service/node_modules
 dump.rdb
+*.pem
