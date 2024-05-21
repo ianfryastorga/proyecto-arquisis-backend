@@ -6,7 +6,6 @@ const { koaBody } = require('koa-body');
 const koaLogger = require('koa-logger');
 const Router = require('koa-router');
 const boddyParser = require('koa-bodyparser');
-const moment = require('moment');
 
 const app = new Koa();
 const router = new Router();
@@ -70,15 +69,23 @@ client.on('message', (topic, message) => {
   try {
     const validation = parseValidationData(message.toString());
     sendValidationToApi(validation);
-    // Logica para confirmar compra o rechazar (atributo estado en front)
   } catch (error) {
     console.error(error.message);
   }
 });
 
-async function sendValidationToBroker(request) {
+async function sendValidationToBroker(validationInfo) {
   try {
-    const requestData = JSON.stringify(request); // Date Handle
+    const { validation } = validationInfo;
+    const { valid } = validationInfo;
+    const validationJSON = {
+      request_id: validation.requestId,
+      group_id: validation.groupId,
+      seller: validation.seller,
+      valid: valid,
+    };
+    console.log('Sending validation to broker:', validationJSON);
+    const requestData = JSON.stringify(validationJSON);
     client.publish(TOPIC, requestData);
     console.log('Request published to broker:', requestData);
   } catch (error) {
@@ -88,10 +95,9 @@ async function sendValidationToBroker(request) {
 
 router.post('/', async (ctx) => {
   try {
-    const request = ctx.request.body;
-    const validation = parseValidationData(request);
-    await sendValidationToBroker(validation);
-    ctx.body = validation;
+    console.log('Received validation:', ctx.request.body);
+    await sendValidationToBroker(ctx.request.body);
+    ctx.body = ctx.request.body;
     ctx.status = 201;
   } catch (error) {
     ctx.body = { error };

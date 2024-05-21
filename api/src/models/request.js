@@ -38,11 +38,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: null,
     },
-    token: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: null,
-    },
     url: {
       type: DataTypes.STRING,
       allowNull: true,

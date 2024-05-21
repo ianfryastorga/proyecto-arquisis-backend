@@ -13,27 +13,24 @@ router.post('requests.create', '/', async (ctx) => {
       ctx.request.body.requestId = uuidv4();
       ctx.request.body.datetime = moment().tz('America/Santiago').format();
     }
-    const request = await ctx.orm.Request.create(ctx.request.body);
+    let request = await ctx.orm.Request.create(ctx.request.body);
     const { groupId } = request;
     const { quantity } = request;
 
     if (groupId === '11' && quantity > 0 && quantity <= 4) {
-      await axios.post(process.env.REQUEST_URL, request);
       const amount = Number(ctx.request.body.price) * Number(quantity);
-      const trx = await tx.create(request.requestId, "entrega1_grupo11", amount, process.env?.FRONTEND_REDIRECT_URL || "http://localhost:5173/purchase-done");
+      const trx = await tx.create(`Grupo11-${request.id}`, "entrega1_grupo11", amount, process.env?.FRONTEND_REDIRECT_URL || "http://localhost:5173/purchaseCompleted");
       await ctx.orm.Request.update(
-        { token: trx.token, url: trx.url, amount: amount}, 
-        {
-          where: {
-            requestId: request.requestId,
-          },
-        }
+        { depositToken: trx.token, url: trx.url, amount: amount }, 
+        { where: { requestId: request.requestId } }
       );
-      const request = await ctx.orm.Request.findOne({ where: { requestId: request.requestId } });
+      request = await ctx.orm.Request.findOne({ where: { requestId: request.requestId } });
+      await axios.post(process.env.REQUEST_URL, request);
     }
     ctx.body = request;
     ctx.status = 201;
   } catch (error) {
+    console.log(error.message);
     ctx.body = { error: error.message };
     ctx.status = 400;
   }
@@ -49,25 +46,26 @@ router.post('requests.commit', '/commit', async (ctx) => {
     return;
   }
   const confirmedTx = await tx.commit(ws_token);
-
-  const validation = await ctx.orm.Requests.findOne({ where: { token: ws_token } });
-
+  const validation = await ctx.orm.Request.findOne({ where: { depositToken: ws_token } });
   if (confirmedTx.response_code != 0) { // Rechaza la compra
-    validation.valid = false;
-    await axios.post(process.env.VALIDATION_URL, { ws_token, validation });
+    await axios.post(process.env.VALIDATION_URL, {
+      validation: validation,
+      valid: false
+    });
     ctx.body = {
       message: "Transaccion ha sido rechazada",
     };
     ctx.status = 200;
     return;
   }
-  validation.valid = true;
-  await axios.post(process.env.VALIDATION_URL, { ws_token, validation });
-
-  ctx.status = 200;
+  await axios.post(process.env.VALIDATION_URL, {
+    validation: validation,
+    valid: true
+  });
   ctx.body = {
     message: "Transaccion ha sido aceptada",
   };
+  ctx.status = 200;
   return;
 });
 
