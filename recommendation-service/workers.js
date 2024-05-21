@@ -5,11 +5,11 @@ const { Sequelize, QueryTypes } = require('sequelize');
 
 dotenv.config();
 
-// function sleep(ms) {
-//     return new Promise((resolve) => {
-//         setTimeout(resolve, ms);
-//     });
-// }
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 console.log("Starting worker...");
 
@@ -24,24 +24,22 @@ async function getIpLocation(ipAddress) {
   const { lat, lon } = response.data;
   console.log(`IP Location: ${lat}, ${lon}`);
   return { lat, lon };
-} // REVISAR
+}
 
 async function getLastFlightInfo(flight) {
-  // Lógica para obtener la información del último vuelo comprado (arrivalAirport, arrivalTime)
   const arrivalAirport = flight.arrivalAirportId;
   const arrivalTime = new Date(flight.arrivalTime);
   return { arrivalAirport, arrivalTime };
 }
 
 async function get20LatestFlights(arrivalAirport, arrivalTime) {
-  // Lógica para obtener los últimos 20 vuelos
   const oneWeekLater = new Date(arrivalTime);
   oneWeekLater.setDate(arrivalTime.getDate() + 7);
 
   const query = `
-    SELECT * FROM flights 
-    WHERE departureAirportId = :arrivalAirport 
-      AND departureTime BETWEEN :arrivalTime AND :oneWeekLater 
+    SELECT * FROM "Flights" 
+    WHERE "departureAirportId" = :arrivalAirport 
+      AND "departureTime" BETWEEN :arrivalTime AND :oneWeekLater 
     LIMIT 20
   `;
   const flights = await sequelize.query(query, {
@@ -49,13 +47,12 @@ async function get20LatestFlights(arrivalAirport, arrivalTime) {
     type: QueryTypes.SELECT,
   });
   return flights;
-  
 }
 
 async function getAirportCoordinates(airportName) {
   try {
     const apiKey = process.env.GEOCODE_API_KEY;
-    const response = await axios.get(`https://geocode.maps.co/geocode/search?q=${airportName}&api_key=${apiKey}`);
+    const response = await axios.get(`https://geocode.maps.co/search?q=${encodeURIComponent(airportName)}&api_key=${apiKey}`);
     if (response.data && response.data.length > 0) {
       const { lat, lon } = response.data[0];
       return { lat, lon };
@@ -63,12 +60,26 @@ async function getAirportCoordinates(airportName) {
       throw new Error('No se encontraron coordenadas para el aeropuerto');
     }
   } catch (error) {
+    console.error(error.message);
     throw new Error('Error al obtener coordenadas del aeropuerto:', error.message);
   }
 }
 
+async function processFlights(flights) {
+  const results = [];
+  for (const flight of flights) {
+    try {
+      const arrivalCoords = await getAirportCoordinates(flight.arrivalAirportName);
+      results.push({ ...flight, arrivalCoords: arrivalCoords });
+      await sleep(1000);
+    } catch (error) {
+      console.error(`Error processing flight ${flight.id}: ${error.message}`);
+    }
+  }
+  return results;
+}
+
 async function calculateDistance(ipCoord, flightCoord) {
-  // Lógica para calcular la distancia entre dos coordenadas
   const latIp = ipCoord.lat * Math.PI / 180;
   const lonIp = ipCoord.lon * Math.PI / 180;
   const latFlight = flightCoord.lat * Math.PI / 180;
@@ -89,37 +100,28 @@ async function calculateDistance(ipCoord, flightCoord) {
 }
 
 async function processor(job) {
-    // Logica para procesar el job y entregar recomendaciones
     try {
       const { flight, username, ipAddress } = job.data;
       console.log(`Processing job for user ${username}`);
-      // Obtener ip coord
+
       const ipCoord = await getIpLocation(ipAddress);
-
-      // Obtener last flight info
       const { arrivalAirport, arrivalTime } = await getLastFlightInfo(flight);
-
-      // Obtener 20 latest flights
       const latestFlights = await get20LatestFlights(arrivalAirport, arrivalTime);
+      const flightsWithCoords = await processFlights(latestFlights);
 
-      // Obtener airport coordinates de los 20 vuelos
-      const flightsWithCoords = await Promise.all(
-        latestFlights.map(async flight => {
-          const arrivalCoords = await getAirportCoordinates(flight.arrivalAirportName);
-          return { ...flight, arrivalCoords };
+      const recommendations = await Promise.all(
+        flightsWithCoords.map(async flight => {
+          const distance = await calculateDistance(ipCoord, flight.arrivalCoords);
+          const price = flight.price;
+          const pond = distance / price;
+
+          return { flight, pond };
         })
       );
 
-      const recommendations = flightsWithCoords.map(flight => {
-        const distance = calculateDistance(ipCoord, flight.arrivalCoords);
-        const price = flight.price;
-        const pond = distance / price;
-
-        return { flight, pond };
-      }).sort((a, b) => b.pond - a.pond).slice(0, 3);
-
-      return recommendations;
+      const sortedRecommendations = recommendations.sort((a, b) => b.pond - a.pond).slice(0, 3);
       
+      return sortedRecommendations;
     } catch (error) {
       console.log(`Error processing job: ${error.message}`);
       throw error;
@@ -162,5 +164,3 @@ async function shutdown() {
 }
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
-
-// COMPLETAR
