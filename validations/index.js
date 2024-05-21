@@ -74,14 +74,14 @@ client.on('message', (topic, message) => {
   }
 });
 
-async function sendValidationToBroker(validationInfo) {
+async function sendValidationToBroker(requestInfo) {
   try {
-    const { validation } = validationInfo;
-    const { valid } = validationInfo;
+    const { request } = requestInfo;
+    const { valid } = requestInfo;
     const validationJSON = {
-      request_id: validation.requestId,
-      group_id: validation.groupId,
-      seller: validation.seller,
+      request_id: request.requestId,
+      group_id: request.groupId,
+      seller: request.seller,
       valid: valid,
     };
     console.log('Sending validation to broker:', validationJSON);

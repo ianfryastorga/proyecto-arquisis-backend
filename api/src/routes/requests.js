@@ -46,10 +46,10 @@ router.post('requests.commit', '/commit', async (ctx) => {
     return;
   }
   const confirmedTx = await tx.commit(ws_token);
-  const validation = await ctx.orm.Request.findOne({ where: { depositToken: ws_token } });
+  const request = await ctx.orm.Request.findOne({ where: { depositToken: ws_token } });
   if (confirmedTx.response_code != 0) { // Rechaza la compra
     await axios.post(process.env.VALIDATION_URL, {
-      validation: validation,
+      request: request,
       valid: false
     });
     ctx.body = {
@@ -59,7 +59,7 @@ router.post('requests.commit', '/commit', async (ctx) => {
     return;
   }
   await axios.post(process.env.VALIDATION_URL, {
-    validation: validation,
+    request: request,
     valid: true
   });
   ctx.body = {
