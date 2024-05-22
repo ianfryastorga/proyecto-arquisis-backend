@@ -87,7 +87,7 @@ jobs:
           REPOSITORY: grupo11arquisis
           IMAGE_TAG: jobsmaster
         run: |
-          cd recommendation-service/jobsmaster
+          cd recommendation-service/jobsMaster
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 
