@@ -82,7 +82,7 @@ async function sendValidationToBroker(requestInfo) {
       request_id: request.requestId,
       group_id: request.groupId,
       seller: request.seller,
-      valid: valid,
+      valid,
     };
     console.log('Sending validation to broker:', validationJSON);
     const requestData = JSON.stringify(validationJSON);

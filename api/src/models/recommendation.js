@@ -1,7 +1,7 @@
-'use strict';
 const {
-  Model
+  Model,
 } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Recommendation extends Model {
     /**
@@ -13,19 +13,19 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.belongsTo(models.Flight, {
         foreignKey: 'flightId',
-        as: 'flight'
+        as: 'flight',
       });
     }
   }
   Recommendation.init({
     username: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     flightId: {
       type: DataTypes.INTEGER,
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     sequelize,
     modelName: 'Recommendation',
