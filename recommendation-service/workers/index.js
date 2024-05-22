@@ -99,37 +99,51 @@ async function calculateDistance(ipCoord, flightCoord) {
   return c * r;
 }
 
+async function saveRecommendation(username, flightId) {
+  try {
+    const response = await axios.post(`${process.env.API_URL}/recommendations`, { username, flightId });
+    console.log(`Recommendation saved: ${response.data.id}`);
+  } catch (error) {
+    console.error(`Error saving recommendation: ${error.message}`);
+    throw error;
+  }
+}
+
 async function processor(job) {
-    try {
-      const { flight, username, ipAddress } = job.data;
-      console.log(`Processing job for user ${username}`);
+  try {
+    const { flight, username, ipAddress } = job.data;
+    console.log(`Processing job for user ${username}`);
 
-      const ipCoord = await getIpLocation(ipAddress);
-      const { arrivalAirport, arrivalTime } = await getLastFlightInfo(flight);
-      const latestFlights = await get20LatestFlights(arrivalAirport, arrivalTime);
-      const flightsWithCoords = await processFlights(latestFlights);
+    const ipCoord = await getIpLocation(ipAddress);
+    const { arrivalAirport, arrivalTime } = await getLastFlightInfo(flight);
+    const latestFlights = await get20LatestFlights(arrivalAirport, arrivalTime);
+    const flightsWithCoords = await processFlights(latestFlights);
 
-      const recommendations = await Promise.all(
-        flightsWithCoords.map(async flight => {
-          const distance = await calculateDistance(ipCoord, flight.arrivalCoords);
-          const price = flight.price;
-          const pond = distance / price;
+    const recommendations = await Promise.all(
+      flightsWithCoords.map(async flight => {
+        const distance = await calculateDistance(ipCoord, flight.arrivalCoords);
+        const price = flight.price;
+        const pond = distance / price;
 
-          return { flight, pond };
-        })
-      );
+        return { flight, pond };
+      })
+    );
 
-      const sortedRecommendations = recommendations.sort((a, b) => b.pond - a.pond).slice(0, 3);
-      
-      return sortedRecommendations;
-    } catch (error) {
-      console.log(`Error processing job: ${error.message}`);
-      throw error;
-    }
+    const sortedRecommendations = recommendations.sort((a, b) => b.pond - a.pond).slice(0, 3);
+    
+    await Promise.all(recommendations.map(async recommendation => {
+      await saveRecommendation(username, recommendation.flight.id);
+    }));
+
+    return sortedRecommendations;
+  } catch (error) {
+    console.log(`Error processing job: ${error.message}`);
+    throw error;
+  }
 }
 
 const connection = {
-    host: process.env.REDIS_HOST || "localhost",
+    host: process.env.REDIS_HOST || "redis",
     port: process.env.REDIS_PORT || 6379,
     password: process.env.REDIS_PASSWORD,
 };

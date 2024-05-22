@@ -67,7 +67,7 @@ router.post('validations.create', '/', async (ctx) => {
     console.log(`Compra aceptada para request ${requestId}`);
     await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'accepted' });
 
-    if (request.gropuId === '11') {
+    if (request.groupId === '11') {
       createFlightRecommendations(request)
     }
     ctx.body = validation;
