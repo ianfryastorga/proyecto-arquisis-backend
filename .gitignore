@@ -1,3 +1,4 @@
+
 listener/node_modules
 api/node_modules
 .env
@@ -9,3 +10,4 @@ recommendation-service/jobsMaster/node_modules
 recommendation-service/workers/node_modules
 dump.rdb
 *.pem
+deploy.zip
