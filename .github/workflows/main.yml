@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        project: [api, listener, requests, validations]
+        project: [api, listener, requests, validations, recommendation-service/jobsMaster, recommendation-service/workers]
 
     steps:
       - name: Checkout code
