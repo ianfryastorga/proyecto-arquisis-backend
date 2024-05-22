@@ -34,6 +34,9 @@ DB_NAME = <db_name>
 DB_HOST = localhost
 REQUEST_URL = http://localhost:8000
 API_URL = http://localhost:3000
+VALIDATION_URL = http://localhost:9000
+JOBS_MASTER_URL = http://localhost:4000
+FRONTEND_REDIRECT_URL = http://localhost:5173/purchaseCompleted
 ```
 2. Crear archivo `.env` dentro de carpeta `listener` con las siguientes variables:
 ```
@@ -47,6 +50,23 @@ REQUEST_PORT = 8000
 4. Crear archivo `.env` dentro de carpeta `validations` con las siguientes variables:
 ```
 API_URL = http://localhost:3000
+VALIDATION_PORT = 9000
+```
+5. Crear archivo `.env` dentro de directorio `recommendation-service/jobs-master` con las siguientes variables:
+```
+REDIS_HOST = redis
+REDIS_PORT = 6379
+REDIS_PASSWORD = 12345
+JOBS_MASTER_PORT = 4000
+```
+6. Crear archivo `.env` dentro de directorio `recommendation-service/workers` con las siguientes variables:
+```
+API_URL=http://localhost:3000
+DB_USERNAME = <db_username>
+DB_PASSWORD = <db_password>
+DB_NAME = <db_name>
+DB_HOST = localhost
+GEOCODE_API_KEY = <geocode_api_key>
 ```
 
 #### Ejecución
@@ -79,6 +99,9 @@ DB_NAME = <db_name>
 DB_HOST = db
 REQUEST_URL = http://requests:3000
 API_URL = http://api:3000
+VALIDATION_URL = http://validations:9000
+JOBS_MASTER_URL = http://jobs-master:4000
+FRONTEND_REDIRECT_URL = http://localhost:5173/purchaseCompleted
 ```
 3. Modificar archivo `.env` dentro de carpeta `listener` con las siguientes variables:
 ```
@@ -92,6 +115,23 @@ REQUEST_PORT = 8000
 5. Modificar archivo `.env` dentro de carpeta `validations` con las siguientes variables:
 ```
 API_URL = http://api:3000
+VALIDATION_PORT = 9000
+```
+6. Crear archivo `.env` dentro de directorio `recommendation-service/jobs-master` con las siguientes variables:
+```
+REDIS_HOST = redis
+REDIS_PORT = 6379
+REDIS_PASSWORD = 12345
+JOBS_MASTER_PORT = 4000
+```
+7. Crear archivo `.env` dentro de directorio `recommendation-service/workers` con las siguientes variables:
+```
+API_URL = http://api:3000
+DB_USERNAME = <db_username>
+DB_PASSWORD = <db_password>
+DB_NAME = <db_name>
+DB_HOST = db
+GEOCODE_API_KEY = <geocode_api_key>
 ```
 
 #### Ejecución
