@@ -6,6 +6,7 @@ on:
       - main
       - master
       - devops
+      - develop
 
 permissions:
   id-token: write  # This is required for requesting the JWT
