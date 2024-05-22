@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-	@@ -24,10 +25,9 @@ jobs:
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -30,7 +30,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr-public
-	@@ -36,9 +36,9 @@ jobs:
+        
           registry-type: public
           mask-password: "true"
 
