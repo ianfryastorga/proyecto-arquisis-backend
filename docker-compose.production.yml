@@ -1,21 +1,24 @@
 version: '3'
 services:
   api:
-    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:api
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:api-${COMMIT_SHA}
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
 
   listener:
-    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:listener
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:listener-${COMMIT_SHA}
 
   requests:
-    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:requests
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:requests-${COMMIT_SHA}
     ports:
       - "8000:8000"
     environment:
       - PORT=8000
 
   validations:
-    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:validations
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:validations-${COMMIT_SHA}
+
+ # recommendation-service:
+  #  image: public.ecr.aws/e9p9x5g6/grupo11arquisis:recommendation-service-${COMMIT_SHA}

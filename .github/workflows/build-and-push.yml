@@ -41,7 +41,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
-          IMAGE_TAG: api
+          IMAGE_TAG: api-${{ github.sha }}
         run: |
           cd api
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
@@ -52,7 +52,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
-          IMAGE_TAG: listener
+          IMAGE_TAG: listener-${{ github.sha }}
         run: |
           cd listener
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
@@ -63,7 +63,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
-          IMAGE_TAG: requests
+          IMAGE_TAG: requests-${{ github.sha }}
         run: |
           cd requests
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
@@ -74,11 +74,23 @@ jobs:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: e9p9x5g6
           REPOSITORY: grupo11arquisis
-          IMAGE_TAG: validations
+          IMAGE_TAG: validations-${{ github.sha }}
         run: |
           cd validations
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+      #- name: Build, tag, and push docker image to Amazon ECR Public (Recommendation Service)
+       # env:
+        #  REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+         # REGISTRY_ALIAS: e9p9x5g6
+          #REPOSITORY: grupo11arquisis
+          #IMAGE_TAG: recommendation-service-${{ github.sha }}
+        #run: |
+         # cd recommendation-service
+          #docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+          #docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
 
   deploy-to-ec2:
     runs-on: ubuntu-latest
