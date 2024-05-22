@@ -4,7 +4,8 @@ const moment = require('moment');
 
 const router = new Router();
 
-async function findFlightAndUpdateQuantity(request) {
+// eslint-disable-next-line consistent-return
+async function findFlight(request) {
   try {
     const response = await axios.get(`${process.env.API_URL}/flights/find`, {
       params: {
@@ -14,7 +15,15 @@ async function findFlightAndUpdateQuantity(request) {
       },
     });
 
-    const flight = response.data;
+    return response.data;
+  } catch (error) {
+    console.error('Error finding flight:', error);
+  }
+}
+
+async function findFlightAndUpdateQuantity(request) {
+  try {
+    const flight = await findFlight(request);
 
     const updatedQuantity = flight.quantity + request.quantity;
     await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity });
@@ -24,24 +33,43 @@ async function findFlightAndUpdateQuantity(request) {
   }
 }
 
+async function createFlightRecommendations(request) {
+  try {
+    console.log('Creating flight recommendations');
+    const flight = await findFlight(request);
+    const { username } = request;
+    const { ipAddress } = request;
+    await axios.post(`${process.env.JOBS_MASTER_URL}/job`, { flight, username, ipAddress });
+  } catch (error) {
+    console.error('Error sending flight info to JobsMaster:', error);
+  }
+}
+
 router.post('validations.create', '/', async (ctx) => {
   try {
+    console.log(ctx.request.body);
     const validation = await ctx.orm.Validation.create(ctx.request.body);
     const { valid } = validation;
     const { requestId } = validation;
 
-    if (valid === true) {
-      console.log(`Compra aceptada para request ${requestId}`);
-      await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'accepted' });
-    } else {
+    const response = await axios.get(`${process.env.API_URL}/requests/${requestId}`);
+    const request = response.data;
+
+    if (!valid) {
       console.log(`Compra rechazada para request ${requestId}`);
       await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'rejected' });
-      const request = axios.get(`${process.env.API_URL}/requests/${requestId}`);
-      findFlightAndUpdateQuantity(request);
-      // Deshacer actualizacion de cantidad en vuelo
-      // Status de la compra (request) rechazada
+      await findFlightAndUpdateQuantity(request);
+      ctx.body = validation;
+      ctx.status = 201;
+      return;
     }
 
+    console.log(`Compra aceptada para request ${requestId}`);
+    await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'accepted' });
+
+    if (request.groupId === '11') {
+      createFlightRecommendations(request);
+    }
     ctx.body = validation;
     ctx.status = 201;
   } catch (error) {

@@ -1,3 +1,4 @@
+
 listener/node_modules
 api/node_modules
 .env
@@ -5,3 +6,8 @@ e0-arqui.pem
 .DS_Store
 requests/node_modules
 validations/node_modules
+recommendation-service/jobsMaster/node_modules
+recommendation-service/workers/node_modules
+dump.rdb
+*.pem
+deploy.zip
