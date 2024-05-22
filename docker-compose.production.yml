@@ -19,3 +19,9 @@ services:
 
   validations:
     image: public.ecr.aws/e9p9x5g6/grupo11arquisis:validations
+
+  jobsmaster:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:jobsmaster
+
+  workers:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:workers

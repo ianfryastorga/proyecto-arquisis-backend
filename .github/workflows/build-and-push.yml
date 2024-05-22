@@ -80,6 +80,28 @@ jobs:
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 
+      - name: Build, tag, and push docker image to Amazon ECR Public (JobsMaster)
+        env:
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          REGISTRY_ALIAS: e9p9x5g6
+          REPOSITORY: grupo11arquisis
+          IMAGE_TAG: jobsmaster
+        run: |
+          cd recommendation-service/jobsmaster
+          docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+      - name: Build, tag, and push docker image to Amazon ECR Public (workers)
+        env:
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          REGISTRY_ALIAS: e9p9x5g6
+          REPOSITORY: grupo11arquisis
+          IMAGE_TAG: workers
+        run: |
+          cd recommendation-service/workers
+          docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
   deploy-to-ec2:
     runs-on: ubuntu-latest
     if: ${{ always() }}
