@@ -10,6 +10,10 @@
 
 ## Documentación API
 
+### Documentación Endpoints
+
+Se puede acceder a la documentación de los endpoints de las APIs en el siguiente enlace: [Documentación Postman](https://documenter.getpostman.com/view/26595524/2sA3QngYek)
+
 ### Postgres
 
 1. Inicializar psql: `sudo -u postgres psql`
@@ -199,7 +203,7 @@ jobs:
 ```
 5. Crear un pull request a las ramas `main` o `develop` y verificar que el pipeline de CI se ejecute correctamente.
 
-#### Pasos para replicar Pipeline CI (Backend)
+#### Pasos para replicar Pipeline CI (Frontend)
 
 * Para replicar el pipeline de CI en el frontend, se debe seguir los mismos pasos anteriores, pero con las siguientes modificaciones:
   1. En el archivo `.yml` de Github Actions, se debe omitir el paso de la matriz, ya que es un solo proyecto.
