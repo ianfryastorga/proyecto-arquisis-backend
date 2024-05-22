@@ -1,4 +1,5 @@
 const Router = require('koa-router');
+const axios = require('axios');
 
 const router = new Router();
 
@@ -36,6 +37,18 @@ router.get('recommendations.list', '/', async (ctx) => {
         );
 
         ctx.body = flightsRecommendations;
+        ctx.status = 200;
+    } catch (error) {
+        ctx.body = { error: error.message };
+        ctx.status = 500;
+    }
+});
+
+router.get('recommendations.heartbeat', '/heartbeat', async (ctx) => {
+    try {
+        const response = await axios.get(`${process.env.JOBS_MASTER_URL}/heartbeat`);
+        
+        ctx.body = response.data;
         ctx.status = 200;
     } catch (error) {
         ctx.body = { error: error.message };

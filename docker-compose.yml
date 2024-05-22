@@ -86,6 +86,7 @@ services:
       - "4000:4000"
     networks:
       - worker
+      - app-network
     depends_on:
       - redis
     env_file:

@@ -63,7 +63,7 @@ router.get('/job/:id', async (ctx) => {
     }
 });
 
-router.get('heartbeat', async (ctx) => {
+router.get('/heartbeat', async (ctx) => {
     // Logica de heartbeat
     ctx.body = { status: true }; // Revisar
 });
