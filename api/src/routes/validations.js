@@ -34,7 +34,7 @@ async function findFlightAndUpdateQuantity(request) {
 
 async function createFlightRecommendations(request) {
   try {
-
+    console.log('Creating flight recommendations')
     const flight = await findFlight(request);
     const username = request.username;
     const ipAddress = request.ipAddress;
@@ -56,18 +56,18 @@ router.post('validations.create', '/', async (ctx) => {
     const request = response.data;
 
     if (!valid) {
-
         console.log(`Compra rechazada para request ${requestId}`);
-        console.log('Request:', request);
         await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'rejected' });
-        findFlightAndUpdateQuantity(request);
+        await findFlightAndUpdateQuantity(request);
+        ctx.body = validation;
+        ctx.status = 201;
         return;
     }
 
     console.log(`Compra aceptada para request ${requestId}`);
     await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'accepted' });
 
-    if (request.gropuId === '11') {
+    if (request.groupId === '11') {
       createFlightRecommendations(request)
     }
     ctx.body = validation;

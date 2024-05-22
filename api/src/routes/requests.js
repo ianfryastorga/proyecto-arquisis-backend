@@ -37,8 +37,16 @@ router.post('requests.create', '/', async (ctx) => {
 });
 
 router.post('requests.commit', '/commit', async (ctx) => {
-  const { ws_token } = ctx.request.body;
+  const { ws_token, tbk_token } = ctx.request.body;
   if (!ws_token || ws_token == "") {
+    console.log("Transaccion anulada por el usuario");
+    if (tbk_token) {
+      const cancelledRequest = await ctx.orm.Request.findOne({ where: { depositToken: tbk_token } });
+      await axios.post(process.env.VALIDATION_URL, {
+        request: cancelledRequest,
+        valid: false
+      });
+    }
     ctx.body = {
       message: "Transaccion anulada por el usuario"
     };

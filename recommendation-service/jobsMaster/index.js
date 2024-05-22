@@ -19,7 +19,7 @@ dotenv.config();
 
 const recommendationQueue = new Queue("recommendationQueue", {
     connection: {
-        host: process.env.REDIS_HOST || "localhost",
+        host: process.env.REDIS_HOST || "redis",
         port: process.env.REDIS_PORT || 6379,
         password: process.env.REDIS_PASSWORD,
     },
@@ -63,7 +63,7 @@ router.get('/job/:id', async (ctx) => {
     }
 });
 
-router.get('heartbeat', async (ctx) => {
+router.get('/heartbeat', async (ctx) => {
     // Logica de heartbeat
     ctx.body = { status: true }; // Revisar
 });
