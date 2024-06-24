@@ -41,7 +41,7 @@ client.on('connect', () => {
   });
 });
 
-function parseAuctionData(auctionData) {
+function parseData(auctionData) {
     try {
         const auctionString = JSON.parse(auctionData);
         const auction = {
@@ -81,7 +81,7 @@ async function sendProposalToApi(proposal) {
 
 async function handleProposalStatus(proposal) {
     try {
-        const response = await axios.post(`${process.env.API_URL}/proposals/${proposal.proposalId}`, proposal);
+        const response = await axios.post(`${process.env.API_URL}/proposals/handleResponse`, proposal);
         console.log('Proposal status updated:', response.data);
     } catch (error) {
         console.error('Error updating proposal status:', error);
@@ -90,14 +90,13 @@ async function handleProposalStatus(proposal) {
 
 client.on('message', (topic, message) => {
     try {
-        const auction = parseAuctionData(message.toString());
+        const auction = parseData(message.toString());
         if (auction.type === 'offer') {
             sendAuctionToApi(auction);
         } else if (auction.type === 'proposal') {
             sendProposalToApi(auction);
         } else if (auction.type === 'acceptance' || auction.type === 'rejection') {
-            return;
-            // Por hacer
+            handleProposalStatus(auction);
         }
     } catch (error) {
         console.error('Error processing data:', error);
@@ -139,6 +138,6 @@ router.post('/', async (ctx) => {
 
 app.listen(process.env.AUCTION_PROPOSAL_PORT, (err) => {
     console.log('Listening on port', process.env.AUCTION_PROPOSAL_PORT);
-}); // Completar .env
+});
 
 module.exports = client;

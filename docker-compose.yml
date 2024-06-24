@@ -73,6 +73,23 @@ services:
       - api
     env_file:
       - ./validations/.env
+
+  auctions-proposals:
+    build:
+      context: ./auctions-proposals
+      dockerfile: Dockerfile
+    container_name: auctions-proposals
+    restart: unless-stopped
+    volumes:
+      - ./auctions-proposals:/app
+    ports:
+      - "6000:6000"
+    networks:
+      - app-network
+    depends_on:
+      - api
+    env_file:
+      - ./auctions-proposals/.env
   
   jobs-master:
     build:

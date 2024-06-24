@@ -23,10 +23,6 @@ module.exports = (sequelize, DataTypes) => {
     quantity: DataTypes.INTEGER,
     groupId: DataTypes.INTEGER,
     type: DataTypes.STRING,
-    state: {
-      type: DataTypes.STRING,
-      defaultValue: 'pending'
-    }
   }, {
     sequelize,
     modelName: 'Proposal',
