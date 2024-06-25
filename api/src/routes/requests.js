@@ -81,6 +81,8 @@ router.post('requests.commit', '/commit', async (ctx) => {
           request: cancelledRequest,
           valid: false,
         });
+      } else {
+        await cancelledRequest.update({ status: 'rejected' });
       }
     }
     ctx.body = {
@@ -100,6 +102,8 @@ router.post('requests.commit', '/commit', async (ctx) => {
         request,
         valid: false,
       });
+    } else {
+      await request.update({ status: 'rejected' });
     }
     ctx.body = {
       message: 'Transaccion ha sido rechazada',
@@ -113,6 +117,7 @@ router.post('requests.commit', '/commit', async (ctx) => {
       valid: true,
     });
   } else {
+    await request.update({ status: 'accepted' });
     await findFlightAndUpdateBookedQuantity(request, ctx);
   }
   ctx.body = {
