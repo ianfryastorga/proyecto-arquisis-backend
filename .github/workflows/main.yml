@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Semantic Versioning
 
 on:
   pull_request:
@@ -12,58 +12,32 @@ on:
       - develop
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        project: [api, listener, requests, validations, recommendation-service/jobsMaster, recommendation-service/workers, auctions-proposals]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: |
-          cd ${{ matrix.project }}
-          yarn install
-
-      - name: Lint with yarn
-        run: |
-          cd ${{ matrix.project }}
-          yarn lint
-
-      - name: echo
-        run: echo "Linting complete!"
-
   versioning:
-    name: Bump Version and Deploy
+    name: Bump Version
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
+      - name: Set up Git
+        run: |
+          git config --global user.email "ianfryastorga@gmail.com"
+          git config --global user.name "ianfryastorga"
 
-      - name: Install dependencies
-        run: yarn install
+      - name: Make script executable
+        run: chmod +x ./scripts/bump_version.sh
 
       - name: Bump version
         run: |
-          chmod +x ./scripts/bump_version.sh
           ./scripts/bump_version.sh patch
 
-      - name: Build and deploy
+      - name: Commit version change
         run: |
-          # Aquí su comando de construcción y despliegue
-          echo "Deploying version $(cat VERSION.txt)"
+          git add VERSION.txt
+          git commit -m "Bump version"
+          git show --stat
+
+      - name: Push changes
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: git push origin $GITHUB_REF
