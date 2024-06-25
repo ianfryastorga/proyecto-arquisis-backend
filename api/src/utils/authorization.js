@@ -6,8 +6,12 @@ dotenv.config();
 async function isAdmin(ctx, next) {
     await next();
     const token = ctx.request.header.authorization.split(' ')[1];
+    console.log("Token:",token);
+    if (!token || token === 'null') {
+        ctx.throw(401, 'Token not found');
+    }
     const decodedToken = jwtDecode(token);
-    const roles = decodedToken[user/roles] || [];
+    const roles = decodedToken["user/roles"] || [];
     ctx.assert(roles.includes('admin'), 403, 'You are not a admin');
 }
 
