@@ -90,7 +90,7 @@ async function findFlightAndUpdateQuantity(request) {
     
     let updatedBooked = flight.booked;
 
-    if (request.seller === '11') {
+    if (request.seller === 11) {
       updatedBooked += request.quantity;
     }
 

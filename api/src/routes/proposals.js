@@ -137,9 +137,6 @@ async function updateFlightsAvailability(auction, proposal, ctx) {
         const proposalFlight = await findFlight(proposal, ctx);
 
         if (auction.groupId === 11) {
-            const updatedAuctionQuantity = auctionFlight.booked - auction.quantity;
-            await auctionFlight.update({ booked: updatedAuctionQuantity });
-
             const updatedProposalQuantity = proposalFlight.booked + proposal.quantity;
             await proposalFlight.update({ booked: updatedProposalQuantity });
         } else if (proposal.groupId === 11) {

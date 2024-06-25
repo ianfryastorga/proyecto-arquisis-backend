@@ -18,7 +18,7 @@ router.post('requests.create', '/', async (ctx) => {
     const { groupId } = request;
     const { quantity } = request;
 
-    if (groupId === '11' && quantity > 0 && quantity <= 4) {
+    if (groupId === '11' && quantity > 0) {
       const amount = Number(ctx.request.body.price) * Number(quantity);
       const trx = await tx.create(
         `Grupo11-${request.id}`,

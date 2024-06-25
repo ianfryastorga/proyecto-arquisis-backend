@@ -9,6 +9,17 @@ const router = new Router();
 router.post('auctions.create', '/', async (ctx) => {
     try {
         const auction = await ctx.orm.Auction.create(ctx.request.body);
+        if (auction.groupId === 11) {
+            const flight = await ctx.orm.Flight.findOne({
+                where: {
+                departureAirportId: auction.departureAirport,
+                arrivalAirportId: auction.arrivalAirport,
+                departureTime: moment(auction.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+                },
+            });
+            const booked = flight.booked - auction.quantity;
+            await flight.update({ booked: booked });
+        }
         ctx.body = auction;
         ctx.status = 201;
     } catch (error) {
@@ -19,6 +30,7 @@ router.post('auctions.create', '/', async (ctx) => {
 
 router.post('auctions.submit', '/submit', async (ctx) => {
     try {
+        console.log(ctx.request.body);
         const auctionData = ctx.request.body;
         const auction = {
             auctionId: uuidv4(),
@@ -26,6 +38,7 @@ router.post('auctions.submit', '/submit', async (ctx) => {
             type: 'offer',
             ...auctionData
         }
+        console.log(auction);
         await axios.post(process.env.AUCTION_PROPOSAL_URL, auction);
         ctx.body = auction;
         ctx.status = 201;
