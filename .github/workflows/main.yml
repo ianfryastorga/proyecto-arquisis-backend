@@ -1,9 +1,13 @@
-name: Lint Workflow
+name: CI/CD Pipeline
 
 on:
   pull_request:
     branches:
       - develop
+      - main
+
+  push:
+    branches:
       - main
 
 jobs:
@@ -24,15 +28,11 @@ jobs:
         with:
           node-version: "20"
 
-      # - name: Install dependencies
-      #   run: yarn install
       - name: Install dependencies
         run: |
           cd ${{ matrix.project }}
           yarn install
 
-      # - name: Lint with yarn
-      #   run: yarn lint
       - name: Lint with yarn
         run: |
           cd ${{ matrix.project }}
@@ -41,3 +41,31 @@ jobs:
       - name: echo
         run: echo "Linting complete!"
 
+  versioning:
+    name: Bump Version and Deploy
+    runs-on: ubuntu-latest
+    needs: lint
+
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Bump version
+        run: |
+          chmod +x ./scripts/bump_version.sh
+          ./scripts/bump_version.sh patch
+
+      - name: Build and deploy
+        run: |
+          # Aquí su comando de construcción y despliegue
+          echo "Deploying version $(cat VERSION.txt)"

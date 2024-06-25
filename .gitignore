@@ -12,3 +12,4 @@ auctions-proposals/node_modules
 dump.rdb
 *.pem
 deploy.zip
+.terraform
