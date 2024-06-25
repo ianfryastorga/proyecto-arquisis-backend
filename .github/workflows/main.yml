@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install dependencies
         run: |
@@ -43,34 +43,25 @@ jobs:
         run: echo "Linting complete!"
 
   versioning:
-    name: Bump Version and Deploy
+    name: Bump Version
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: yarn install
-        
-      - name: Set up Git
-        run: |
-          git config --global user.email "ianfryastorga@gmail.com"
-          git config --global user.name "ianfryastorga"
+      - name: Make script executable
+        run: chmod +x ./scripts/bump_version.sh
 
       - name: Bump version
-        run: |
-          chmod +x ./scripts/bump_version.sh
-          ./scripts/bump_version.sh patch
+        run: ./scripts/bump_version.sh patch
 
-      - name: Build and deploy
+      - name: Show version
         run: |
-          # Aquí su comando de construcción y despliegue
-          echo "Deploying version $(cat VERSION.txt)"
+          echo "Version $(cat VERSION.txt)"
 
