@@ -42,4 +42,4 @@ jobs:
 
       - name: Push changes
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
-        run: git push origin $GITHUB_REF
+        run: git push origin ${{ github.ref }}
