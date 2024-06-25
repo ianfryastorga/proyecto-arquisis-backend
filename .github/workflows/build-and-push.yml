@@ -1,11 +1,13 @@
 # name: Build and Push to ECR
 
+
 # on:
 #   push:
 #     branches:
 #       - main
 #       - master
 #       - devops
+
 
 # permissions:
 #   id-token: write  # This is required for requesting the JWT
