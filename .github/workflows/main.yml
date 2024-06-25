@@ -5,11 +5,13 @@ on:
     branches:
       - develop
       - main
+      - master
 
   push:
     branches:
       - main
       - develop
+      - master
 
 jobs:
   versioning:
@@ -39,5 +41,5 @@ jobs:
           git show --stat
 
       - name: Push changes
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
         run: git push origin $GITHUB_REF
