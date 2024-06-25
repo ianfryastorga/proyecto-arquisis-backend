@@ -1,40 +1,70 @@
-name: Semantic Versioning
+name: CI/CD Pipeline
 
 on:
   pull_request:
     branches:
       - develop
+      - main
 
   push:
     branches:
+      - main
       - develop
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project: [api, listener, requests, validations, recommendation-service/jobsMaster, recommendation-service/workers, auctions-proposals]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.project }}
+          yarn install
+
+      - name: Lint with yarn
+        run: |
+          cd ${{ matrix.project }}
+          yarn lint
+
+      - name: echo
+        run: echo "Linting complete!"
+
   versioning:
-    name: Bump Version
+    name: Bump Version and Deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Git
-        run: |
-          git config --global user.email "ianfryastorga@gmail.com"
-          git config --global user.name "ianfryastorga"
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-      - name: Make script executable
-        run: chmod +x ./scripts/bump_version.sh
+      - name: Install dependencies
+        run: yarn install
 
       - name: Bump version
-        run: ./scripts/bump_version.sh patch
-
-      - name: Commit version change
         run: |
-          git add VERSION.txt
-          git commit -m "Bump version"
-          git show --stat
+          chmod +x ./scripts/bump_version.sh
+          ./scripts/bump_version.sh patch
 
-      - name: Push changes
-        if: github.ref == 'refs/heads/develop'
-        run: git push origin develop
+      - name: Build and deploy
+        run: |
+          # Aquí su comando de construcción y despliegue
+          echo "Deploying version $(cat VERSION.txt)"
+
