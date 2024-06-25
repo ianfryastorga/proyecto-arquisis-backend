@@ -20,7 +20,7 @@ router.post('proposals.create', '/', async (ctx) => {
             return;
         }
 
-        if (groupId !== '11' && auction.groupId !== '11') {
+        if (groupId !== 11 && auction.groupId !== 11) {
             ctx.body = { error: 'Proposal is not from group 11 or auction is not from group 11' };
             ctx.status = 400;
             return;
@@ -41,7 +41,6 @@ router.post('proposals.submit', '/submit', async (ctx) => {
         const proposal = {
             proposalId: uuidv4(),
             type: 'proposal',
-            groupId: '11',
             ...proposalData
         }
         await axios.post(process.env.AUCTION_PROPOSAL_URL, proposal);
@@ -98,10 +97,7 @@ router.get('proposals.listByAuction', '/auction/:auctionId', async (ctx) => {
 router.post('proposals.submitResponse', '/submitResponse', async (ctx) => {
     try { 
         const response = ctx.request.body;
-        await axios.post(process.env.AUCTION_PROPOSAL_URL, {
-            groupId: '11',
-            ...response
-        });
+        await axios.post(process.env.AUCTION_PROPOSAL_URL, response);
         ctx.body = response;
         ctx.status = 200;
     } catch (error) {
@@ -111,7 +107,7 @@ router.post('proposals.submitResponse', '/submitResponse', async (ctx) => {
 });
 
 // eslint-disable-next-line consistent-return
-async function findFlight(request) {
+async function findFlight(request, ctx) {
     try {
       const flight = await ctx.orm.Flight.findOne({
         where: {
@@ -135,18 +131,18 @@ async function findFlight(request) {
     }
 }
 
-async function updateFlightsAvailability(auction, proposal) {
+async function updateFlightsAvailability(auction, proposal, ctx) {
     try {
-        const auctionFlight = await findFlight(auction);
-        const proposalFlight = await findFlight(proposal);
+        const auctionFlight = await findFlight(auction, ctx);
+        const proposalFlight = await findFlight(proposal, ctx);
 
-        if (auction.groupId === '11') {
+        if (auction.groupId === 11) {
             const updatedAuctionQuantity = auctionFlight.booked - auction.quantity;
             await auctionFlight.update({ booked: updatedAuctionQuantity });
 
             const updatedProposalQuantity = proposalFlight.booked + proposal.quantity;
             await proposalFlight.update({ booked: updatedProposalQuantity });
-        } else if (proposal.groupId === '11') {
+        } else if (proposal.groupId === 11) {
             const updatedAuctionQuantity = auctionFlight.booked + auction.quantity;
             await auctionFlight.update({ booked: updatedAuctionQuantity });
 
@@ -159,7 +155,7 @@ async function updateFlightsAvailability(auction, proposal) {
     }
 }
 
-async function deleteProposals(auction) {
+async function deleteProposals(auction, ctx) {
     const proposals = await ctx.orm.Proposal.findAll({
         where: { auctionId: auction.auctionId },
     });
@@ -169,7 +165,7 @@ async function deleteProposals(auction) {
     }
 }
 
-async function handleProposalAcceptance(response, auction) {
+async function handleProposalAcceptance(response, auction, ctx) {
     try {
         const auctionGroup = auction.groupId;
     
@@ -178,9 +174,9 @@ async function handleProposalAcceptance(response, auction) {
         });
     
         // Aceptamos la propuesta de otro grupo
-        if (auctionGroup === '11') {
-            await updateFlightsAvailability(auction, proposal);   
-            await deleteProposals(auction);
+        if (auctionGroup === 11) {
+            await updateFlightsAvailability(auction, proposal, ctx);   
+            await deleteProposals(auction, ctx);
             await auction.destroy();
             
             return;
@@ -188,14 +184,14 @@ async function handleProposalAcceptance(response, auction) {
     
         // Otro grupo acepta nuestra propuesta
         if (proposal) {
-            await updateFlightsAvailability(auction, proposal);
-            await deleteProposals(auction);
+            await updateFlightsAvailability(auction, proposal, ctx);
+            await deleteProposals(auction, ctx);
             await auction.destroy();
             return;
         }
     
         // Otro grupo acepta otra propuesta (no nuestra)
-        await deleteProposals(auction);
+        await deleteProposals(auction, ctx);
         await auction.destroy();
     } catch (error) {
         ctx.body = { error: error.message };
@@ -203,7 +199,7 @@ async function handleProposalAcceptance(response, auction) {
     }
 }
 
-async function handleProposalRejection(response) {
+async function handleProposalRejection(response, ctx) {
     const proposal = await ctx.orm.Proposal.findOne({
         where: { proposalId: response.proposalId },
     });
@@ -217,7 +213,7 @@ router.post('proposals.handleResponse', '/handleResponse', async (ctx) => {
     try {
         const response = ctx.request.body;
         const auction = await ctx.orm.Auction.findOne({
-            where: { auctionId: proposal.auctionId },
+            where: { auctionId: response.auctionId },
         });
         if (!auction) {
             ctx.body = { error: 'Auction not found' };
@@ -226,16 +222,17 @@ router.post('proposals.handleResponse', '/handleResponse', async (ctx) => {
         }
         
         if (response.type === 'acceptance') {
-            await handleProposalAcceptance(response, auction);
+            await handleProposalAcceptance(response, auction, ctx);
         } else if (response.type === 'rejection') {
-            await handleProposalRejection(response);
+            await handleProposalRejection(response, ctx);
         }
+
+        ctx.body = response;
+        ctx.status = 200;
     } catch (error) {
         ctx.body = { error: error.message };
         ctx.status = 400;
     }
 });
-
-
 
 module.exports = router;

@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Proposal.init({
-    auctionId: DataTypes.UUID,
-    proposalId: DataTypes.UUID,
+    auctionId: DataTypes.STRING,
+    proposalId: DataTypes.STRING,
     departureAirport: DataTypes.STRING,
     arrivalAirport: DataTypes.STRING,
     departureTime: DataTypes.DATE,

@@ -46,12 +46,13 @@ function parseData(auctionData) {
         const auctionString = JSON.parse(auctionData);
         const auction = {
         auctionId: auctionString.auction_id,
-        groupId: auctionString.group_id,
+        proposalId: auctionString.proposal_id,
         departureAirport: auctionString.departure_airport,
         arrivalAirport: auctionString.arrival_airport,
         departureTime: new Date(auctionString.departure_time),
         airline: auctionString.airline,
         quantity: auctionString.quantity,
+        groupId: auctionString.group_id,
         type: auctionString.type,
         };
         return auction;
@@ -107,7 +108,7 @@ async function sendAuctionOrProposalToBroker(data) {
     try {
         const parsedData = {
             auction_id: data.auctionId,
-            proposal_id: data.proposalId || "",
+            proposal_id: data.proposalId,
             departure_airport: data.departureAirport,
             arrival_airport: data.arrivalAirport,
             departure_time: moment(data.departureTime).format('YYYY-MM-DD HH:mm'),

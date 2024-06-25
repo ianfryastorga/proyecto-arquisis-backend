@@ -23,7 +23,6 @@ router.post('auctions.submit', '/submit', async (ctx) => {
             auctionId: uuidv4(),
             proposalId: '',
             type: 'offer',
-            groupId: '11',
             ...auctionData
         }
         await axios.post(process.env.AUCTION_PROPOSAL_URL, auction);
@@ -35,9 +34,24 @@ router.post('auctions.submit', '/submit', async (ctx) => {
     }
 });
 
-router.get('auctions.list', '/', async (ctx) => {
+// Subastas de otros grupos
+router.get('auctions.listOthers', '/others', async (ctx) => {
     try {
         const auctions = await ctx.orm.Auction.findAll();
+        const auctionsFiltered = auctions.filter(auction => auction.groupId !== 11);
+        ctx.body = auctionsFiltered;
+        ctx.status = 200;
+    } catch (error) {
+        ctx.body = { error: error.message };
+        ctx.status = 500;
+    }
+});
+
+router.get('auctions.listAdmin', '/', async (ctx) => {
+    try {
+        const auctions = await ctx.orm.Auction.findAll({
+            where: { groupId: 11 },
+        });
         ctx.body = auctions;
         ctx.status = 200;
     } catch (error) {
