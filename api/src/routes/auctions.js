@@ -28,7 +28,7 @@ router.post('auctions.create', '/', async (ctx) => {
     }
 });
 
-router.post('auctions.submit', '/submit', async (ctx) => {
+router.post('auctions.submit', '/submit', isAdmin, async (ctx) => {
     try {
         console.log(ctx.request.body);
         const auctionData = ctx.request.body;
@@ -61,7 +61,7 @@ router.get('auctions.listOthers', '/others', isAdmin, async (ctx) => {
     }
 });
 
-router.get('auctions.listAdmin', '/', async (ctx) => {
+router.get('auctions.listAdmin', '/', isAdmin, async (ctx) => {
     try {
         const auctions = await ctx.orm.Auction.findAll({
             where: { groupId: 11 },
@@ -74,7 +74,7 @@ router.get('auctions.listAdmin', '/', async (ctx) => {
     }
 });
 
-router.get('auctions.show', '/:auctionId', async (ctx) => {
+router.get('auctions.show', '/:auctionId', isAdmin, async (ctx) => {
     try {
         const auction = await ctx.orm.Auction.findOne({
             where: { auctionId: ctx.params.auctionId },

@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
 const { where } = require('sequelize');
+const { isAdmin, verifyToken } = require('../utils/authorization');
 
 const router = new Router();
 
@@ -66,7 +67,7 @@ router.post('proposals.create', '/', async (ctx) => {
     }
 });
 
-router.post('proposals.submit', '/submit', async (ctx) => {
+router.post('proposals.submit', '/submit', isAdmin, async (ctx) => {
     try {
         const proposalData = ctx.request.body;
         const proposal = {
@@ -83,7 +84,7 @@ router.post('proposals.submit', '/submit', async (ctx) => {
     }
 });
 
-router.get('proposals.list', '/', async (ctx) => {
+router.get('proposals.list', '/', isAdmin, async (ctx) => {
     try {
         const proposals = await ctx.orm.Proposal.findAll();
         ctx.body = proposals;
@@ -94,7 +95,7 @@ router.get('proposals.list', '/', async (ctx) => {
     }
 });
 
-router.get('proposals.show', '/:proposalId', async (ctx) => {
+router.get('proposals.show', '/:proposalId', isAdmin, async (ctx) => {
     try {
         const proposal = await ctx.orm.Proposal.findOne({
             where: { proposalId: ctx.params.proposalId },
@@ -112,7 +113,7 @@ router.get('proposals.show', '/:proposalId', async (ctx) => {
     }
 });
 
-router.get('proposals.listByAuction', '/auction/:auctionId', async (ctx) => {
+router.get('proposals.listByAuction', '/auction/:auctionId', isAdmin, async (ctx) => {
     try {
         const proposals = await ctx.orm.Proposal.findAll({
             where: { auctionId: ctx.params.auctionId },
@@ -125,7 +126,7 @@ router.get('proposals.listByAuction', '/auction/:auctionId', async (ctx) => {
     }
 });
 
-router.post('proposals.submitResponse', '/submitResponse', async (ctx) => {
+router.post('proposals.submitResponse', '/submitResponse', isAdmin, async (ctx) => {
     try { 
         const response = ctx.request.body;
         await axios.post(process.env.AUCTION_PROPOSAL_URL, response);
@@ -225,7 +226,7 @@ async function handleProposalRejection(response, ctx) {
     }
 }
 
-router.post('proposals.handleResponse', '/handleResponse', async (ctx) => {
+router.post('proposals.handleResponse', '/handleResponse', isAdmin, async (ctx) => {
     try {
         const response = ctx.request.body;
         const auction = await ctx.orm.Auction.findOne({

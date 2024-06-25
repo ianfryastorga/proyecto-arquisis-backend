@@ -52,8 +52,8 @@ async function findFlightAndUpdateBookedQuantity(request, ctx) {
   try {
     const flight = await ctx.orm.Flight.findOne({
       where: {
-        departureAirport: request.departureAirport,
-        arrivalAirport: request.arrivalAirport,
+        departureAirportId: request.departureAirport,
+        arrivalAirportId: request.arrivalAirport,
         departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
       },
     });
