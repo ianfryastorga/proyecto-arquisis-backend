@@ -18,7 +18,7 @@ router.post('requests.create', '/', async (ctx) => {
     const { groupId } = request;
     const { quantity } = request;
 
-    if (groupId === '11' && quantity > 0 && quantity <= 4) {
+    if (groupId === '11' && quantity > 0) {
       const amount = Number(ctx.request.body.price) * Number(quantity);
       const trx = await tx.create(
         `Grupo11-${request.id}`,
@@ -34,7 +34,10 @@ router.post('requests.create', '/', async (ctx) => {
       request = await ctx.orm.Request.findOne({
         where: { requestId: request.requestId },
       });
-      await axios.post(process.env.REQUEST_URL, request);
+
+      if (!request.isBooked) {
+        await axios.post(process.env.REQUEST_URL, request);
+      }
     }
     ctx.body = request;
     ctx.status = 201;
@@ -45,6 +48,25 @@ router.post('requests.create', '/', async (ctx) => {
   }
 });
 
+async function findFlightAndUpdateBookedQuantity(request, ctx) {
+  try {
+    const flight = await ctx.orm.Flight.findOne({
+      where: {
+        departureAirport: request.departureAirport,
+        arrivalAirport: request.arrivalAirport,
+        departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+      },
+    });
+
+    const updatedBooked = flight.booked - request.quantity;
+
+    await flight.update({ booked: updatedBooked });
+    console.log('Flight updated:', flight.id);
+  } catch (error) {
+    console.error('Error updating flight:', error);
+  }
+}
+
 router.post('requests.commit', '/commit', async (ctx) => {
   const { ws_token, tbk_token } = ctx.request.body;
   if (!ws_token || ws_token === '') {
@@ -53,10 +75,13 @@ router.post('requests.commit', '/commit', async (ctx) => {
       const cancelledRequest = await ctx.orm.Request.findOne({
         where: { depositToken: tbk_token },
       });
-      await axios.post(process.env.VALIDATION_URL, {
-        request: cancelledRequest,
-        valid: false,
-      });
+
+      if (!cancelledRequest.isBooked) {
+        await axios.post(process.env.VALIDATION_URL, {
+          request: cancelledRequest,
+          valid: false,
+        });
+      }
     }
     ctx.body = {
       message: 'Transaccion anulada por el usuario',
@@ -70,20 +95,26 @@ router.post('requests.commit', '/commit', async (ctx) => {
   });
   if (confirmedTx.response_code !== 0) {
     // Rechaza la compra
-    await axios.post(process.env.VALIDATION_URL, {
-      request,
-      valid: false,
-    });
+    if (!request.isBooked) {
+      await axios.post(process.env.VALIDATION_URL, {
+        request,
+        valid: false,
+      });
+    }
     ctx.body = {
       message: 'Transaccion ha sido rechazada',
     };
     ctx.status = 200;
     return;
   }
-  await axios.post(process.env.VALIDATION_URL, {
-    request,
-    valid: true,
-  });
+  if (!request.isBooked) {
+    await axios.post(process.env.VALIDATION_URL, {
+      request,
+      valid: true,
+    });
+  } else {
+    await findFlightAndUpdateBookedQuantity(request, ctx);
+  }
   ctx.body = {
     message: 'Transaccion ha sido aceptada',
   };
