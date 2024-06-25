@@ -11,3 +11,5 @@ recommendation-service/workers/node_modules
 dump.rdb
 *.pem
 deploy.zip
+.terraform
+.terraform.lock.hcl

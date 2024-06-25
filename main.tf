@@ -46,7 +46,7 @@ resource "aws_eip" "my_eip" {
 
 # 3. Create a security group to open ports
 resource "aws_security_group" "my_security_group" {
-  name        = "my-security-group"
+  name        = "my-security-group1"
   description = "Security group for SSH access"
 
   ingress {
