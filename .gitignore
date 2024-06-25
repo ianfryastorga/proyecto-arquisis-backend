@@ -8,6 +8,7 @@ requests/node_modules
 validations/node_modules
 recommendation-service/jobsMaster/node_modules
 recommendation-service/workers/node_modules
+auctions-proposals/node_modules
 dump.rdb
 *.pem
 deploy.zip
