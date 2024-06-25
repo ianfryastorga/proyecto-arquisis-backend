@@ -40,7 +40,5 @@ new_version=$(increment_version $version $1)
 # Actualizar el archivo de versión
 echo $new_version > VERSION.txt
 
-# Commit y push
-git add VERSION.txt
-git commit -m "Bump version to $new_version"
-git push origin main
+# Mostrar la versión actualizada
+echo "Bumped version to $new_version"
