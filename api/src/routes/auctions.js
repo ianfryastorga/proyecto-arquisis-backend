@@ -2,6 +2,7 @@ const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
+const { isAdmin, verifyToken } = require('../utils/authorization');
 
 const router = new Router();
 
@@ -35,7 +36,7 @@ router.post('auctions.submit', '/submit', async (ctx) => {
 });
 
 // Subastas de otros grupos
-router.get('auctions.listOthers', '/others', async (ctx) => {
+router.get('auctions.listOthers', '/others', isAdmin, async (ctx) => {
     try {
         const auctions = await ctx.orm.Auction.findAll();
         const auctionsFiltered = auctions.filter(auction => auction.groupId !== 11);
