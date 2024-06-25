@@ -6,6 +6,31 @@ const { where } = require('sequelize');
 
 const router = new Router();
 
+// eslint-disable-next-line consistent-return
+async function findFlight(request, ctx) {
+    try {
+      const flight = await ctx.orm.Flight.findOne({
+        where: {
+          departureAirportId: request.departureAirport,
+          arrivalAirportId: request.arrivalAirport,
+          departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+        },
+      });
+
+      if (!flight) {
+        ctx.body = { error: 'Flight not found' };
+        ctx.status = 404;
+        return;
+      }
+      
+      return flight;
+
+    } catch (error) {
+      ctx.body = { error: error.message };
+      ctx.status = 500;
+    }
+}
+
 router.post('proposals.create', '/', async (ctx) => {
     try {
         const { groupId, auctionId } = ctx.request.body;
@@ -24,9 +49,15 @@ router.post('proposals.create', '/', async (ctx) => {
             ctx.body = { error: 'Proposal is not from group 11 or auction is not from group 11' };
             ctx.status = 400;
             return;
-        }   
+        }
 
         const proposal = await ctx.orm.Proposal.create(ctx.request.body);
+
+        if (groupId === 11) {
+            const flight = await findFlight(proposal, ctx);
+            const booked = flight.booked - proposal.quantity;
+            await flight.update({ booked: booked });
+        }
         ctx.body = proposal;
         ctx.status = 201;
     } catch (error) {
@@ -106,31 +137,6 @@ router.post('proposals.submitResponse', '/submitResponse', async (ctx) => {
     }
 });
 
-// eslint-disable-next-line consistent-return
-async function findFlight(request, ctx) {
-    try {
-      const flight = await ctx.orm.Flight.findOne({
-        where: {
-          departureAirportId: request.departureAirport,
-          arrivalAirportId: request.arrivalAirport,
-          departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
-        },
-      });
-
-      if (!flight) {
-        ctx.body = { error: 'Flight not found' };
-        ctx.status = 404;
-        return;
-      }
-      
-      return flight;
-
-    } catch (error) {
-      ctx.body = { error: error.message };
-      ctx.status = 500;
-    }
-}
-
 async function updateFlightsAvailability(auction, proposal, ctx) {
     try {
         const auctionFlight = await findFlight(auction, ctx);
@@ -142,9 +148,6 @@ async function updateFlightsAvailability(auction, proposal, ctx) {
         } else if (proposal.groupId === 11) {
             const updatedAuctionQuantity = auctionFlight.booked + auction.quantity;
             await auctionFlight.update({ booked: updatedAuctionQuantity });
-
-            const updatedProposalQuantity = proposalFlight.booked - proposal.quantity;
-            await proposalFlight.update({ booked: updatedProposalQuantity });
         }
     } catch (error) {
         ctx.body = { error: error.message };
@@ -159,6 +162,18 @@ async function deleteProposals(auction, ctx) {
 
     for (const proposal of proposals) {
         await proposal.destroy();
+    }
+}
+
+async function updateBookedQuantityAfterRejection(auction, ctx) {
+    const proposals = await ctx.orm.Proposal.findAll({
+        where: { auctionId: auction.auctionId },
+    });
+
+    for (const proposal of proposals) {
+        const flight = await findFlight(proposal, ctx);
+        const updatedBooked = flight.booked + proposal.quantity;
+        await flight.update({ booked: updatedBooked });
     }
 }
 
@@ -188,6 +203,7 @@ async function handleProposalAcceptance(response, auction, ctx) {
         }
     
         // Otro grupo acepta otra propuesta (no nuestra)
+        await updateBookedQuantityAfterRejection(auction, ctx);
         await deleteProposals(auction, ctx);
         await auction.destroy();
     } catch (error) {
@@ -202,6 +218,9 @@ async function handleProposalRejection(response, ctx) {
     });
 
     if (proposal) {
+        const flight = await findFlight(proposal, ctx);
+        const updatedBooked = flight.booked + proposal.quantity;
+        await flight.update({ booked: updatedBooked });
         await proposal.destroy();
     }
 }
