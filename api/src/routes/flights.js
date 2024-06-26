@@ -113,6 +113,19 @@ router.get('flights.find', '/find', async (ctx) => {
   }
 });
 
+router.get('flight.showBooked', '/booked', async (ctx) => {
+  try {
+    const flight = await ctx.orm.Flight.findAll({
+      where: { booked: { [Op.gt]: 0 } },
+    });
+    ctx.body = flight;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+});
+
 router.get('flight.show', '/:id', async (ctx) => {
   try {
     const flight = await ctx.orm.Flight.findOne({
