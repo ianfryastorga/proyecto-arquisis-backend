@@ -75,7 +75,7 @@ async function sendProposalToApi(proposal) {
     try {
         const response = await axios.post(`${process.env.API_URL}/proposals`, proposal);
         console.log('Proposal send to API:', response.data);
-    } catch {
+    } catch (error) {
         console.error('Error sending proposal to API', error);
     }
 }
