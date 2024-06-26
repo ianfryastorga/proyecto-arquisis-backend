@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 const dotenv = require('dotenv');
 const { jwtDecode } = require('jwt-decode');
 
@@ -5,7 +6,10 @@ dotenv.config();
 
 async function isAdmin(ctx, next) {
   await next();
-  const token = ctx.request.header.authorization.split(' ')[1];
+  let token = null;
+  if (ctx.request.header.authorization) {
+    token = ctx.request.header.authorization.split(' ')[1];
+  }
   console.log('Token:', token);
   if (!token || token === 'null') {
     ctx.throw(401, 'Token not found');

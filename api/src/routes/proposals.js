@@ -226,7 +226,7 @@ async function handleProposalRejection(response, ctx) {
   }
 }
 
-router.post('proposals.handleResponse', '/handleResponse', isAdmin, async (ctx) => {
+router.post('proposals.handleResponse', '/handleResponse', async (ctx) => {
   try {
     const response = ctx.request.body;
     const auction = await ctx.orm.Auction.findOne({
