@@ -145,19 +145,6 @@ router.patch('requests.update', '/:requestId', async (ctx) => {
   }
 });
 
-router.get('requests.showGroup', '/group', async (ctx) => {
-  try {
-    const requests = await ctx.orm.Request.findAll({
-      where: { seller: 11, status: 'accepted'},
-    });
-    ctx.body = requests;
-    ctx.status = 200;
-  } catch (error) {
-    ctx.body = { error: error.message };
-    ctx.status = 400;
-  }
-});
-
 router.get('requests.show', '/:requestId', async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
