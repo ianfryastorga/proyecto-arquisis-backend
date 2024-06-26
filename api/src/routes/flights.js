@@ -116,7 +116,7 @@ router.get('flights.find', '/find', async (ctx) => {
 router.get('flight.showBooked', '/booked', async (ctx) => {
   try {
     const flight = await ctx.orm.Flight.findAll({
-      where: { booked: {[Op.gt]: 0 }},
+      where: { booked: { [Op.gt]: 0 } },
     });
     ctx.body = flight;
     ctx.status = 200;

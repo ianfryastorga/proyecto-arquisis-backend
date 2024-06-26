@@ -32,7 +32,7 @@ async function findFlightAndUpdateQuantity(request) {
     }
 
     const updatedQuantity = flight.quantity + request.quantity;
-    await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity, booked: updatedBooked});
+    await axios.patch(`${process.env.API_URL}/flights/${flight.id}`, { quantity: updatedQuantity, booked: updatedBooked });
     console.log('Flight updated:', flight.id);
   } catch (error) {
     console.error('Error updating flight:', error);
